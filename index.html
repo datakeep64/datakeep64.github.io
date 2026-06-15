@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Adhithi Muruganandam — AI & ML Portfolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --surface2: #1c2128;
+      --border: #30363d;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --accent: #58a6ff;
+      --accent2: #3fb950;
+      --accent3: #d2a8ff;
+      --tag-bg: #1f2d3d;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      font-size: 16px;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* NAV */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(13, 17, 23, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+    }
+
+    .nav-brand {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      font-weight: 400;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover {
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    /* HERO */
+    .hero {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 100px 2rem 80px;
+    }
+
+    .hero-tag {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--accent2);
+      background: rgba(63, 185, 80, 0.1);
+      border: 1px solid rgba(63, 185, 80, 0.25);
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      margin-bottom: 1.5rem;
+    }
+
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      margin-bottom: 1.25rem;
+    }
+
+    .hero h1 span {
+      background: linear-gradient(135deg, var(--accent), var(--accent3));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-sub {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      max-width: 580px;
+      margin-bottom: 2.5rem;
+      line-height: 1.75;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.4rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #0d1117;
+    }
+
+    .btn-primary:hover {
+      background: #79b8ff;
+      text-decoration: none;
+      color: #0d1117;
+    }
+
+    .btn-outline {
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    .btn-outline:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    /* SECTION */
+    section {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 80px 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .section-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+
+    .section-title {
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+    }
+
+    .section-body {
+      color: var(--text-muted);
+      font-size: 0.975rem;
+      max-width: 640px;
+    }
+
+    /* MODULE CARDS */
+    .modules {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+      margin-top: 2.5rem;
+    }
+
+    .module-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      transition: border-color 0.2s;
+    }
+
+    .module-card:hover {
+      border-color: var(--accent);
+    }
+
+    .module-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .module-name {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--text);
+    }
+
+    .module-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .module-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 1rem;
+    }
+
+    .tag {
+      font-size: 0.72rem;
+      font-family: 'JetBrains Mono', monospace;
+      background: var(--tag-bg);
+      color: var(--accent);
+      padding: 0.2rem 0.55rem;
+      border-radius: 4px;
+    }
+
+    /* PROJECT CARDS */
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1rem;
+      margin-top: 2.5rem;
+    }
+
+    .project-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      position: relative;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .project-card:hover {
+      border-color: var(--border);
+      transform: translateY(-2px);
+    }
+
+    .project-card.live {
+      border-color: rgba(63, 185, 80, 0.3);
+    }
+
+    .project-card.live:hover {
+      border-color: var(--accent2);
+    }
+
+    .project-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.72rem;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+      margin-bottom: 1rem;
+      font-weight: 500;
+    }
+
+    .status-live {
+      background: rgba(63, 185, 80, 0.12);
+      color: var(--accent2);
+      border: 1px solid rgba(63, 185, 80, 0.25);
+    }
+
+    .status-soon {
+      background: rgba(210, 168, 255, 0.1);
+      color: var(--accent3);
+      border: 1px solid rgba(210, 168, 255, 0.2);
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .status-live .status-dot {
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .project-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--text);
+    }
+
+    .project-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .project-module {
+      margin-top: 1rem;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* WRITING */
+    .writing-note {
+      margin-top: 2rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .writing-note strong {
+      color: var(--text);
+    }
+
+    /* GITHUB CTA */
+    .github-cta {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2.5rem;
+      text-align: center;
+      margin-top: 2.5rem;
+    }
+
+    .github-cta h3 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+    }
+
+    .github-cta p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-bottom: 1.5rem;
+      max-width: 480px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border);
+      text-align: center;
+      padding: 2rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 600px) {
+      nav { padding: 0 1rem; }
+      .nav-links { gap: 1rem; }
+      .hero { padding: 60px 1.25rem 60px; }
+      section { padding: 60px 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <span class="nav-brand">Adhithi Muruganandam</span>
+    <ul class="nav-links">
+      <li><a href="#foundation">Background</a></li>
+      <li><a href="#projects">Projects</a></li>
+      <li><a href="#writing">Writing</a></li>
+      <li><a href="https://github.com/datakeep64" target="_blank">GitHub</a></li>
+    </ul>
+  </nav>
+
+  <div class="hero">
+    <div class="hero-tag">NUS-ISS · Intelligent Reasoning Systems</div>
+    <h1>Applied AI &amp; ML<br /><span>from reasoning to recognition</span></h1>
+    <p class="hero-sub">
+      I build applied projects at the intersection of reasoning systems, machine learning, and cognitive AI —
+      grounded in the NUS-ISS Graduate Certificate curriculum and extended through independent work.
+    </p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="#projects">View Projects</a>
+      <a class="btn btn-outline" href="https://github.com/datakeep64" target="_blank">
+        GitHub
+      </a>
+    </div>
+  </div>
+
+  <section id="foundation">
+    <div class="section-label">Academic Foundation</div>
+    <h2 class="section-title">Graduate Certificate in Intelligent Reasoning Systems</h2>
+    <p class="section-body">
+      The following modules form the core of my reasoning systems background. Each project on this site draws
+      directly from one or more of these areas — the goal is to go beyond coursework and show what the concepts
+      look like when applied to real problems.
+    </p>
+
+    <div class="modules">
+      <div class="module-card">
+        <div class="module-icon">🔍</div>
+        <div class="module-name">Machine Reasoning</div>
+        <div class="module-desc">
+          Search strategies, constraint satisfaction, classification, knowledge graphs, and link prediction.
+        </div>
+        <div class="module-tags">
+          <span class="tag">CSP</span>
+          <span class="tag">A*</span>
+          <span class="tag">KNN</span>
+          <span class="tag">Decision Trees</span>
+          <span class="tag">Knowledge Graphs</span>
+        </div>
+      </div>
+
+      <div class="module-card">
+        <div class="module-icon">⚙️</div>
+        <div class="module-name">Reasoning Systems</div>
+        <div class="module-desc">
+          Hybrid reasoning architectures, association rule mining, evolutionary computation, and optimisation.
+        </div>
+        <div class="module-tags">
+          <span class="tag">Genetic Algorithms</span>
+          <span class="tag">Apriori</span>
+          <span class="tag">Hybrid RS</span>
+          <span class="tag">Optimisation</span>
+        </div>
+      </div>
+
+      <div class="module-card">
+        <div class="module-icon">🧠</div>
+        <div class="module-name">Cognitive Systems</div>
+        <div class="module-desc">
+          NLP, vision cognition, word embeddings, fine-tuning pre-trained models, and retrieval-augmented generation.
+        </div>
+        <div class="module-tags">
+          <span class="tag">NLP</span>
+          <span class="tag">Embeddings</span>
+          <span class="tag">RAG</span>
+          <span class="tag">HuggingFace</span>
+          <span class="tag">PCA</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="projects">
+    <div class="section-label">Projects</div>
+    <h2 class="section-title">Applied Demonstrations</h2>
+    <p class="section-body">
+      Each project here takes a concept from the IRS curriculum and builds it into something that can be explored
+      hands-on. Code and implementation notes live on GitHub; interactive versions are hosted here.
+    </p>
+
+    <div class="projects-grid">
+
+      <div class="project-card">
+        <div class="project-status status-soon">
+          <span class="status-dot"></span> In Progress
+        </div>
+        <div class="project-title">Genetic Algorithm — Travelling Salesman</div>
+        <div class="project-desc">
+          Visualise how a population of routes evolves over generations toward an optimal path.
+          Adjust mutation rate, population size, and watch convergence happen in real time.
+        </div>
+        <div class="project-module">→ Reasoning Systems · Evolutionary Computation</div>
+      </div>
+
+      <div class="project-card">
+        <div class="project-status status-soon">
+          <span class="status-dot"></span> In Progress
+        </div>
+        <div class="project-title">Word Embedding Explorer</div>
+        <div class="project-desc">
+          Compare how IMDB-trained, GPT-2, and Word2Vec embeddings position the same words in semantic space.
+          Reduced to 2D with PCA and navigable interactively.
+        </div>
+        <div class="project-module">→ Cognitive Systems · Representation Learning</div>
+      </div>
+
+      <div class="project-card">
+        <div class="project-status status-soon">
+          <span class="status-dot"></span> In Progress
+        </div>
+        <div class="project-title">N-Queens Constraint Solver</div>
+        <div class="project-desc">
+          Step through how constraint propagation and backtracking work on a live chessboard.
+          Adjustable board size, with each decision made visible.
+        </div>
+        <div class="project-module">→ Machine Reasoning · Constraint Satisfaction</div>
+      </div>
+
+      <div class="project-card">
+        <div class="project-status status-soon">
+          <span class="status-dot"></span> In Progress
+        </div>
+        <div class="project-title">ASD Classification — DT vs kNN vs Bayes</div>
+        <div class="project-desc">
+          Enter feature values and see how three different classifiers each arrive at a prediction —
+          and why they sometimes disagree.
+        </div>
+        <div class="project-module">→ Machine Reasoning · Pattern Classification</div>
+      </div>
+
+      <div class="project-card">
+        <div class="project-status status-soon">
+          <span class="status-dot"></span> In Progress
+        </div>
+        <div class="project-title">Knowledge Graph Explorer</div>
+        <div class="project-desc">
+          Navigate entity relationships in a medical knowledge base. Built on PyKEEN with TransE embeddings
+          for link prediction.
+        </div>
+        <div class="project-module">→ Machine Reasoning · Knowledge Representation</div>
+      </div>
+
+      <div class="project-card">
+        <div class="project-status status-soon">
+          <span class="status-dot"></span> In Progress
+        </div>
+        <div class="project-title">RAG Chatbot</div>
+        <div class="project-desc">
+          A retrieval-augmented generation pipeline — upload a document, ask questions, and see
+          which retrieved passages informed the answer.
+        </div>
+        <div class="project-module">→ Cognitive Systems · NLP &amp; Retrieval</div>
+      </div>
+
+    </div>
+
+    <div style="margin-top: 1.5rem; padding: 1rem 1.5rem; background: var(--surface2); border-radius: 8px; border: 1px solid var(--border); font-size: 0.85rem; color: var(--text-muted);">
+      All project source code, implementation notes, and model details are documented in the
+      <a href="https://github.com/datakeep64" target="_blank">GitHub repository</a>.
+    </div>
+  </section>
+
+  <section id="writing">
+    <div class="section-label">Writing</div>
+    <h2 class="section-title">AI &amp; Ideas</h2>
+    <p class="section-body">
+      Alongside the technical work, I write about AI concepts, book discussions, and ideas worth thinking through carefully.
+    </p>
+    <div class="writing-note">
+      <strong>Coming soon</strong> — essays on AI reasoning, book discussions, and notes from the field.
+    </div>
+  </section>
+
+  <section id="contact" style="border-bottom: 1px solid var(--border);">
+    <div class="github-cta">
+      <h3>See the work in full</h3>
+      <p>Implementation code, README walkthroughs, datasets, and model notebooks are all on GitHub.</p>
+      <a class="btn btn-primary" href="https://github.com/datakeep64" target="_blank">
+        github.com/datakeep64
+      </a>
+    </div>
+  </section>
+
+  <footer>
+    Adhithi Muruganandam &mdash; NUS-ISS · Graduate Certificate in Intelligent Reasoning Systems
+  </footer>
+
+</body>
+</html>
