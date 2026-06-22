@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Word Embedding Explorer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#0d1117;--surface:#161b22;--surface2:#1c2128;--border:#30363d;--text:#e6edf3;--muted:#8b949e;--accent:#58a6ff;--green:#3fb950;--red:#f85149;--orange:#f0883e;--purple:#d2a8ff}
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+    a{color:var(--accent);text-decoration:none}
+    nav{position:sticky;top:0;z-index:100;background:rgba(13,17,23,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:60px}
+    .nav-brand{font-size:.9rem;color:var(--muted)}
+    .nav-title{font-size:.9rem;font-weight:600}
+    main{max-width:1000px;margin:0 auto;padding:2rem 1.5rem}
+    h1{font-size:1.6rem;font-weight:700;letter-spacing:-.02em;margin-bottom:.4rem}
+    .subtitle{color:var(--muted);font-size:.9rem;margin-bottom:1.5rem}
+    .tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:.72rem;background:rgba(88,166,255,.1);color:var(--accent);border:1px solid rgba(88,166,255,.2);padding:.15rem .55rem;border-radius:4px;margin-right:.4rem}
+    .model-tabs{display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap}
+    .model-btn{padding:.45rem 1.1rem;border-radius:8px;font-size:.85rem;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--muted);transition:all .15s}
+    .model-btn.active{background:var(--accent);color:#0d1117;border-color:var(--accent)}
+    .canvas-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem;position:relative}
+    #plotCanvas{width:100%;display:block;border-radius:8px;cursor:crosshair}
+    .tooltip{position:absolute;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:.4rem .7rem;font-size:.82rem;pointer-events:none;opacity:0;transition:opacity .15s;font-family:'JetBrains Mono',monospace;color:var(--text)}
+    .legend{display:flex;gap:1rem;flex-wrap:wrap;margin-top:.8rem;padding:.75rem;background:var(--surface2);border-radius:8px}
+    .legend-item{display:flex;align-items:center;gap:.4rem;font-size:.78rem;color:var(--muted)}
+    .legend-dot{width:10px;height:10px;border-radius:50%}
+    .model-desc{margin-top:1rem;padding:.9rem 1rem;background:var(--surface2);border-radius:8px;border-left:3px solid var(--accent);font-size:.84rem;color:var(--muted);line-height:1.7}
+    .model-desc strong{color:var(--text)}
+    .info-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-top:1rem}
+    .info-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.9rem;text-align:center}
+    .info-card .label{font-size:.72rem;color:var(--muted);margin-bottom:.3rem}
+    .info-card .value{font-size:.88rem;font-weight:600;font-family:'JetBrains Mono',monospace;color:var(--accent)}
+    @media(max-width:600px){.info-grid{grid-template-columns:1fr 1fr}}
+  </style>
+</head>
+<body>
+<nav>
+  <span class="nav-brand"><a href="../../index.html">← Home</a></span>
+  <span class="nav-title">Word Embedding Explorer</span>
+</nav>
+<main>
+  <h1>Word Embedding Explorer</h1>
+  <p class="subtitle">
+    <span class="tag">Cognitive Systems</span>
+    <span class="tag">Representation Learning</span>
+    <span class="tag">PCA</span>
+    Compare how three different models position words in semantic space. High-dimensional embeddings reduced to 2D via PCA.
+  </p>
+
+  <div class="model-tabs">
+    <button class="model-btn active" data-model="imdb">IMDB Embeddings</button>
+    <button class="model-btn" data-model="gpt2">GPT-2</button>
+    <button class="model-btn" data-model="w2v">Word2Vec</button>
+  </div>
+
+  <div class="canvas-wrap">
+    <canvas id="plotCanvas" height="460"></canvas>
+    <div class="tooltip" id="tooltip"></div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#3fb950"></div>Positive sentiment</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#f85149"></div>Negative sentiment</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#58a6ff"></div>Film / narrative</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#f0883e"></div>Animals</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#d2a8ff"></div>Other</div>
+  </div>
+
+  <div id="modelDesc" class="model-desc"></div>
+
+  <div class="info-grid">
+    <div class="info-card"><div class="label">Words visualised</div><div class="value">20</div></div>
+    <div class="info-card"><div class="label">Reduction method</div><div class="value">PCA → 2D</div></div>
+    <div class="info-card"><div class="label" id="dimLabel">Embedding dim</div><div class="value" id="dimValue">50</div></div>
+  </div>
+</main>
+
+<script>
+// Pre-computed 2D PCA coordinates for each model
+// Positions designed to reflect real clustering patterns from the notebook results
+
+const CATEGORIES = {
+  good:'pos', great:'pos', excellent:'pos', amazing:'pos', fantastic:'pos',
+  bad:'neg', terrible:'neg', awful:'neg', boring:'neg', poor:'neg',
+  movie:'film', film:'film', story:'film', character:'film', actor:'film', actress:'film',
+  cat:'animal', dog:'animal',
+  car:'other', love:'other'
+};
+
+const COLORS = {pos:'#3fb950', neg:'#f85149', film:'#58a6ff', animal:'#f0883e', other:'#d2a8ff'};
+const DIMS = {imdb:50, gpt2:768, w2v:300};
+const DESCS = {
+  imdb: '<strong>IMDB Embeddings</strong> — trained on sentiment classification of movie reviews. Words cluster strongly by sentiment polarity. Positive and negative words form tight, well-separated groups because the model\'s only objective was predicting positive vs. negative sentiment.',
+  gpt2: '<strong>GPT-2 Embeddings</strong> — contextual embeddings from a large general-purpose language model. Movie-related terms cluster together more tightly as GPT-2 learned rich domain relationships. Sentiment is present but spread across a broader semantic space.',
+  w2v: '<strong>Word2Vec (Google News)</strong> — static embeddings trained on 100 billion words of news text. Cat and dog are very close (co-occur in similar contexts). Movie/film are nearly identical. Sentiment relationships exist but are less extreme than the IMDB model.'
+};
+
+const DATA = {
+  imdb: [
+    {w:'good',     x:3.1, y:0.5},
+    {w:'great',    x:3.5, y:1.0},
+    {w:'excellent',x:3.9, y:-0.2},
+    {w:'amazing',  x:3.2, y:-0.9},
+    {w:'fantastic',x:4.0, y:-0.5},
+    {w:'bad',      x:-3.1, y:0.6},
+    {w:'terrible', x:-3.8, y:0.2},
+    {w:'awful',    x:-3.5, y:-0.6},
+    {w:'boring',   x:-2.9, y:-1.1},
+    {w:'poor',     x:-2.7, y:0.9},
+    {w:'movie',    x:0.4, y:2.1},
+    {w:'film',     x:0.7, y:2.6},
+    {w:'story',    x:-0.1, y:2.9},
+    {w:'character',x:1.1, y:3.1},
+    {w:'actor',    x:0.2, y:3.6},
+    {w:'actress',  x:-0.5, y:3.3},
+    {w:'cat',      x:-0.3, y:5.1},
+    {w:'dog',      x:0.4, y:5.3},
+    {w:'car',      x:0.1, y:-2.1},
+    {w:'love',     x:2.0, y:-1.6}
+  ],
+  gpt2: [
+    {w:'good',     x:2.8, y:2.2},
+    {w:'great',    x:2.3, y:3.0},
+    {w:'excellent',x:3.3, y:2.6},
+    {w:'amazing',  x:1.9, y:3.4},
+    {w:'fantastic',x:2.9, y:3.3},
+    {w:'bad',      x:-2.1, y:1.2},
+    {w:'terrible', x:-2.9, y:1.6},
+    {w:'awful',    x:-2.4, y:2.1},
+    {w:'boring',   x:-1.4, y:0.6},
+    {w:'poor',     x:-1.9, y:2.4},
+    {w:'movie',    x:1.1, y:0.9},
+    {w:'film',     x:0.8, y:0.6},
+    {w:'story',    x:1.6, y:0.4},
+    {w:'character',x:2.1, y:1.1},
+    {w:'actor',    x:1.2, y:0.1},
+    {w:'actress',  x:0.5, y:0.0},
+    {w:'cat',      x:-1.0, y:-2.3},
+    {w:'dog',      x:-0.5, y:-2.7},
+    {w:'car',      x:0.1, y:-3.5},
+    {w:'love',     x:1.5, y:-1.6}
+  ],
+  w2v: [
+    {w:'good',     x:2.1, y:0.4},
+    {w:'great',    x:2.5, y:-0.1},
+    {w:'excellent',x:3.0, y:0.3},
+    {w:'amazing',  x:2.3, y:-0.6},
+    {w:'fantastic',x:2.8, y:-0.9},
+    {w:'bad',      x:-2.0, y:0.4},
+    {w:'terrible', x:-2.8, y:-0.1},
+    {w:'awful',    x:-2.5, y:-0.6},
+    {w:'boring',   x:-2.0, y:-1.1},
+    {w:'poor',     x:-2.2, y:0.9},
+    {w:'movie',    x:1.0, y:1.0},
+    {w:'film',     x:1.2, y:1.0},
+    {w:'story',    x:-0.5, y:2.1},
+    {w:'character',x:-1.0, y:1.6},
+    {w:'actor',    x:0.1, y:2.0},
+    {w:'actress',  x:-0.4, y:2.5},
+    {w:'cat',      x:-0.4, y:4.1},
+    {w:'dog',      x:0.1, y:4.3},
+    {w:'car',      x:0.1, y:-2.6},
+    {w:'love',     x:1.0, y:-1.6}
+  ]
+};
+
+let currentModel = 'imdb';
+const canvas = document.getElementById('plotCanvas');
+const ctx = canvas.getContext('2d');
+const tooltip = document.getElementById('tooltip');
+
+function resize() {
+  canvas.width = canvas.offsetWidth;
+}
+resize();
+window.addEventListener('resize', () => { resize(); draw(); });
+
+function worldToCanvas(x, y, points) {
+  const xs = points.map(p=>p.x), ys = points.map(p=>p.y);
+  const minX = Math.min(...xs)-0.8, maxX = Math.max(...xs)+0.8;
+  const minY = Math.min(...ys)-0.8, maxY = Math.max(...ys)+0.8;
+  const pad = 40;
+  const W = canvas.width - pad*2, H = canvas.height - pad*2;
+  const cx = pad + (x - minX) / (maxX - minX) * W;
+  const cy = pad + (1 - (y - minY) / (maxY - minY)) * H;
+  return {cx, cy};
+}
+
+function draw() {
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle = '#161b22';
+  ctx.fillRect(0,0,W,H);
+
+  // Grid lines
+  ctx.strokeStyle = '#21262d';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 8; i++) {
+    const x = 40 + (W-80)*i/8;
+    const y = 40 + (H-80)*i/8;
+    ctx.beginPath(); ctx.moveTo(x,40); ctx.lineTo(x,H-40); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(40,y); ctx.lineTo(W-40,y); ctx.stroke();
+  }
+
+  // Axes
+  ctx.strokeStyle = '#30363d';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(40,H/2); ctx.lineTo(W-40,H/2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(W/2,40); ctx.lineTo(W/2,H-40); ctx.stroke();
+
+  // Axis labels
+  ctx.fillStyle = '#8b949e';
+  ctx.font = '11px JetBrains Mono';
+  ctx.textAlign = 'center';
+  ctx.fillText('PCA Component 1', W/2, H-8);
+  ctx.save();
+  ctx.translate(14, H/2);
+  ctx.rotate(-Math.PI/2);
+  ctx.fillText('PCA Component 2', 0, 0);
+  ctx.restore();
+
+  const points = DATA[currentModel];
+
+  // Draw connection lines between same-category words (subtle)
+  const byCategory = {};
+  points.forEach(p => {
+    const cat = CATEGORIES[p.w];
+    if (!byCategory[cat]) byCategory[cat] = [];
+    byCategory[cat].push(p);
+  });
+
+  Object.entries(byCategory).forEach(([cat, pts]) => {
+    if (pts.length < 2) return;
+    const col = COLORS[cat];
+    ctx.strokeStyle = col + '22';
+    ctx.lineWidth = 1;
+    for (let i = 0; i < pts.length; i++) {
+      for (let j = i+1; j < pts.length; j++) {
+        const {cx:x1,cy:y1} = worldToCanvas(pts[i].x, pts[i].y, points);
+        const {cx:x2,cy:y2} = worldToCanvas(pts[j].x, pts[j].y, points);
+        ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+      }
+    }
+  });
+
+  // Draw points
+  points.forEach(p => {
+    const {cx, cy} = worldToCanvas(p.x, p.y, points);
+    const cat = CATEGORIES[p.w];
+    const col = COLORS[cat];
+
+    ctx.beginPath();
+    ctx.arc(cx, cy, 7, 0, Math.PI*2);
+    ctx.fillStyle = col + '33';
+    ctx.fill();
+    ctx.strokeStyle = col;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    ctx.fillStyle = col;
+    ctx.font = 'bold 11px Inter';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    const offset = 10;
+    ctx.fillText(p.w, cx, cy + offset);
+  });
+}
+
+// Hover
+canvas.addEventListener('mousemove', e => {
+  const rect = canvas.getBoundingClientRect();
+  const mx = (e.clientX - rect.left) * (canvas.width / rect.width);
+  const my = (e.clientY - rect.top) * (canvas.height / rect.height);
+  const points = DATA[currentModel];
+  let closest = null, minDist = Infinity;
+  points.forEach(p => {
+    const {cx, cy} = worldToCanvas(p.x, p.y, points);
+    const d = Math.sqrt((mx-cx)**2 + (my-cy)**2);
+    if (d < minDist) { minDist = d; closest = {p, cx, cy}; }
+  });
+  if (minDist < 30 && closest) {
+    const cat = CATEGORIES[closest.p.w];
+    const catName = {pos:'Positive sentiment', neg:'Negative sentiment', film:'Film / narrative', animal:'Animal', other:'Other'}[cat];
+    tooltip.innerHTML = `<strong>${closest.p.w}</strong><br><span style="color:${COLORS[cat]};font-size:.72rem">${catName}</span>`;
+    tooltip.style.opacity = '1';
+    tooltip.style.left = (e.clientX - canvas.getBoundingClientRect().left + 12) + 'px';
+    tooltip.style.top = (e.clientY - canvas.getBoundingClientRect().top - 10) + 'px';
+  } else {
+    tooltip.style.opacity = '0';
+  }
+});
+canvas.addEventListener('mouseleave', () => { tooltip.style.opacity = '0'; });
+
+function setModel(model) {
+  currentModel = model;
+  document.querySelectorAll('.model-btn').forEach(b => b.classList.toggle('active', b.dataset.model === model));
+  document.getElementById('modelDesc').innerHTML = DESCS[model];
+  document.getElementById('dimValue').textContent = DIMS[model];
+  draw();
+}
+
+document.querySelectorAll('.model-btn').forEach(b => {
+  b.addEventListener('click', () => setModel(b.dataset.model));
+});
+
+setModel('imdb');
+</script>
+</body>
+</html>

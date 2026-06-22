@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>News Intelligence System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#0d1117;--surface:#161b22;--surface2:#1c2128;--border:#30363d;--text:#e6edf3;--muted:#8b949e;--accent:#58a6ff;--green:#3fb950;--purple:#d2a8ff;--orange:#f0883e}
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.7}
+    a{color:var(--accent);text-decoration:none}
+    a:hover{text-decoration:underline}
+    nav{position:sticky;top:0;z-index:100;background:rgba(13,17,23,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:60px}
+    .nav-brand{font-size:.9rem;color:var(--muted)}
+    .nav-brand a{color:var(--muted)}
+    .nav-title{font-size:.9rem;font-weight:600}
+    main{max-width:860px;margin:0 auto;padding:3rem 1.5rem}
+    .status-badge{display:inline-flex;align-items:center;gap:.4rem;font-size:.75rem;font-family:'JetBrains Mono',monospace;background:rgba(210,168,255,.1);color:var(--purple);border:1px solid rgba(210,168,255,.2);padding:.25rem .75rem;border-radius:20px;margin-bottom:1.5rem}
+    .status-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+    h1{font-size:clamp(1.6rem,4vw,2.4rem);font-weight:700;letter-spacing:-.025em;line-height:1.2;margin-bottom:.75rem}
+    .subtitle{color:var(--muted);font-size:1rem;margin-bottom:2.5rem;max-width:600px}
+    .tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:.72rem;background:rgba(88,166,255,.1);color:var(--accent);border:1px solid rgba(88,166,255,.2);padding:.2rem .55rem;border-radius:4px;margin:.2rem .2rem 0 0}
+    .tags{margin-bottom:2.5rem}
+    .divider{border:none;border-top:1px solid var(--border);margin:2.5rem 0}
+    h2{font-size:1.15rem;font-weight:600;margin-bottom:1rem;letter-spacing:-.01em}
+    p{color:var(--muted);font-size:.95rem;margin-bottom:1rem}
+    .pipeline{display:flex;flex-direction:column;gap:.75rem;margin:1.5rem 0}
+    .pipeline-step{display:flex;gap:1rem;align-items:flex-start;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem}
+    .step-num{font-family:'JetBrains Mono',monospace;font-size:.75rem;color:var(--accent);background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.2);border-radius:6px;padding:.2rem .55rem;flex-shrink:0;margin-top:.1rem}
+    .step-content h3{font-size:.9rem;font-weight:600;margin-bottom:.3rem}
+    .step-content p{font-size:.85rem;color:var(--muted);margin:0}
+    .tech-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.75rem;margin-top:1rem}
+    .tech-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.9rem 1rem}
+    .tech-card .label{font-size:.72rem;font-family:'JetBrains Mono',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.4rem}
+    .tech-card .value{font-size:.875rem;color:var(--text);font-weight:500}
+    .progress-block{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.25rem;margin-top:1rem}
+    .progress-item{display:flex;align-items:center;gap:.75rem;padding:.5rem 0;border-bottom:1px solid var(--border);font-size:.875rem}
+    .progress-item:last-child{border-bottom:none}
+    .check{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.7rem}
+    .check.done{background:rgba(63,185,80,.15);color:var(--green);border:1px solid rgba(63,185,80,.3)}
+    .check.wip{background:rgba(240,136,62,.12);color:var(--orange);border:1px solid rgba(240,136,62,.25)}
+    .check.todo{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
+    .back-link{display:inline-flex;align-items:center;gap:.4rem;font-size:.875rem;color:var(--muted);margin-bottom:2rem}
+    .back-link:hover{color:var(--text);text-decoration:none}
+  </style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-brand"><a href="../../">Adhithi Muruganandam</a></span>
+  <span class="nav-title">News Intelligence System</span>
+</nav>
+
+<main>
+  <a class="back-link" href="../../#applied">← Applied AI Projects</a>
+
+  <div class="status-badge"><span class="status-dot"></span> In Progress</div>
+  <h1>News Intelligence System</h1>
+  <p class="subtitle">
+    An end-to-end pipeline for processing news content — from raw article collection through to
+    semantic search and retrieval. Integrates NLP and information retrieval techniques into a unified system.
+  </p>
+
+  <div class="tags">
+    <span class="tag">Python</span>
+    <span class="tag">BeautifulSoup</span>
+    <span class="tag">spaCy</span>
+    <span class="tag">NLTK</span>
+    <span class="tag">Scikit-learn</span>
+    <span class="tag">Sentence Transformers</span>
+    <span class="tag">Pandas</span>
+    <span class="tag">FAISS</span>
+  </div>
+
+  <hr class="divider"/>
+
+  <h2>Pipeline Architecture</h2>
+  <p>Five sequential stages, each feeding into the next — designed so any stage can be swapped or extended independently.</p>
+
+  <div class="pipeline">
+    <div class="pipeline-step">
+      <span class="step-num">01</span>
+      <div class="step-content">
+        <h3>Data Collection</h3>
+        <p>Web scraping with BeautifulSoup targeting news sources. Structured extraction of headline, body, source, and publish date.</p>
+      </div>
+    </div>
+    <div class="pipeline-step">
+      <span class="step-num">02</span>
+      <div class="step-content">
+        <h3>Text Preprocessing</h3>
+        <p>Cleaning pipeline using NLTK and spaCy — tokenisation, stopword removal, lemmatisation, and noise filtering for consistent input to downstream models.</p>
+      </div>
+    </div>
+    <div class="pipeline-step">
+      <span class="step-num">03</span>
+      <div class="step-content">
+        <h3>Topic Classification</h3>
+        <p>Multi-class classifier trained on preprocessed article text. Labels articles by topic category using TF-IDF features and a Scikit-learn classifier.</p>
+      </div>
+    </div>
+    <div class="pipeline-step">
+      <span class="step-num">04</span>
+      <div class="step-content">
+        <h3>Summarisation</h3>
+        <p>Extractive summarisation to distill key sentences from each article, reducing length while preserving the core information.</p>
+      </div>
+    </div>
+    <div class="pipeline-step">
+      <span class="step-num">05</span>
+      <div class="step-content">
+        <h3>Embedding-Based Search</h3>
+        <p>Sentence Transformers encode articles into dense vectors. FAISS index enables semantic similarity search — retrieving relevant articles by meaning, not just keyword match.</p>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider"/>
+
+  <h2>Tech Stack</h2>
+  <div class="tech-grid">
+    <div class="tech-card">
+      <div class="label">Collection</div>
+      <div class="value">BeautifulSoup, Requests</div>
+    </div>
+    <div class="tech-card">
+      <div class="label">NLP</div>
+      <div class="value">spaCy, NLTK</div>
+    </div>
+    <div class="tech-card">
+      <div class="label">Classification</div>
+      <div class="value">Scikit-learn, TF-IDF</div>
+    </div>
+    <div class="tech-card">
+      <div class="label">Embeddings</div>
+      <div class="value">Sentence Transformers</div>
+    </div>
+    <div class="tech-card">
+      <div class="label">Vector Search</div>
+      <div class="value">FAISS</div>
+    </div>
+    <div class="tech-card">
+      <div class="label">Data</div>
+      <div class="value">Pandas, NumPy</div>
+    </div>
+  </div>
+
+  <hr class="divider"/>
+
+  <h2>Build Status</h2>
+  <div class="progress-block">
+    <div class="progress-item"><span class="check done">✓</span> Data collection scraper</div>
+    <div class="progress-item"><span class="check done">✓</span> Text preprocessing pipeline</div>
+    <div class="progress-item"><span class="check wip">~</span> Topic classifier (training in progress)</div>
+    <div class="progress-item"><span class="check wip">~</span> Extractive summarisation</div>
+    <div class="progress-item"><span class="check todo">·</span> Embedding index + FAISS search</div>
+    <div class="progress-item"><span class="check todo">·</span> Unified pipeline runner</div>
+  </div>
+
+  <hr class="divider"/>
+
+  <a href="https://github.com/datakeep64" target="_blank" class="btn" style="display:inline-flex;align-items:center;gap:.5rem;background:#58a6ff;color:#0d1117;padding:.6rem 1.4rem;border-radius:8px;font-size:.9rem;font-weight:500;text-decoration:none">
+    View on GitHub →
+  </a>
+</main>
+
+</body>
+</html>

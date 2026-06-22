@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Knowledge Graph Explorer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#0d1117;--surface:#161b22;--surface2:#1c2128;--border:#30363d;--text:#e6edf3;--muted:#8b949e;--accent:#58a6ff;--green:#3fb950;--red:#f85149;--orange:#f0883e;--purple:#d2a8ff;--yellow:#e3b341}
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+    a{color:var(--accent);text-decoration:none}
+    nav{position:sticky;top:0;z-index:100;background:rgba(13,17,23,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:60px}
+    .nav-brand{font-size:.9rem;color:var(--muted)}
+    .nav-title{font-size:.9rem;font-weight:600}
+    main{max-width:1100px;margin:0 auto;padding:2rem 1.5rem}
+    h1{font-size:1.6rem;font-weight:700;letter-spacing:-.02em;margin-bottom:.4rem}
+    .subtitle{color:var(--muted);font-size:.9rem;margin-bottom:1.5rem}
+    .tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:.72rem;background:rgba(88,166,255,.1);color:var(--accent);border:1px solid rgba(88,166,255,.2);padding:.15rem .55rem;border-radius:4px;margin-right:.4rem}
+    .layout{display:grid;grid-template-columns:1fr 250px;gap:1.5rem}
+    #graphWrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;position:relative}
+    svg{display:block;width:100%;height:520px}
+    .panel{display:flex;flex-direction:column;gap:1rem}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.25rem}
+    .card h3{font-size:.8rem;font-weight:600;color:var(--muted);margin-bottom:.8rem;text-transform:uppercase;letter-spacing:.05em}
+    .legend-item{display:flex;align-items:center;gap:.5rem;font-size:.82rem;color:var(--muted);margin-bottom:.4rem}
+    .legend-dot{width:12px;height:12px;border-radius:3px;flex-shrink:0}
+    .detail-box{background:var(--surface2);border-radius:8px;padding:.8rem;font-size:.82rem;min-height:80px}
+    .detail-box .d-name{font-weight:600;color:var(--text);margin-bottom:.3rem;font-family:'JetBrains Mono',monospace}
+    .detail-box .d-type{font-size:.72rem;color:var(--muted);margin-bottom:.5rem}
+    .detail-box .d-rels{color:var(--muted);line-height:1.7;font-size:.78rem}
+    .detail-box .d-rels span{color:var(--accent)}
+    .note{font-size:.78rem;color:var(--muted);line-height:1.6;padding:.75rem;background:var(--surface2);border-radius:8px;border-left:3px solid var(--accent)}
+    .search-wrap{position:relative}
+    .search-wrap input{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:.5rem .8rem;border-radius:8px;font-size:.82rem;outline:none}
+    .search-wrap input:focus{border-color:var(--accent)}
+    .graph-hint{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);font-size:.75rem;color:var(--muted);background:rgba(13,17,23,.8);padding:.3rem .7rem;border-radius:20px;pointer-events:none}
+    @media(max-width:768px){.layout{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<nav>
+  <span class="nav-brand"><a href="../../index.html">← Home</a></span>
+  <span class="nav-title">Knowledge Graph Explorer</span>
+</nav>
+<main>
+  <h1>Medical Knowledge Graph</h1>
+  <p class="subtitle">
+    <span class="tag">Machine Reasoning</span>
+    <span class="tag">Knowledge Representation</span>
+    <span class="tag">PyKEEN / TransE</span>
+    A force-directed graph of medical entities and their relationships — inspired by the UMLS knowledge base used in the PyKEEN/TransE assignment. Drag nodes, click to explore, search to highlight.
+  </p>
+
+  <div class="layout">
+    <div id="graphWrap">
+      <svg id="graph"></svg>
+      <div class="graph-hint">Drag nodes · Click to inspect · Scroll to zoom</div>
+    </div>
+
+    <div class="panel">
+      <div class="card">
+        <h3>Entity Types</h3>
+        <div class="legend-item"><div class="legend-dot" style="background:#f85149"></div>Disease / Disorder</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#f0883e"></div>Symptom / Sign</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#3fb950"></div>Treatment / Therapy</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#d2a8ff"></div>Biomarker / Gene</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#58a6ff"></div>Co-occurrence</div>
+      </div>
+
+      <div class="card">
+        <h3>Search</h3>
+        <div class="search-wrap">
+          <input type="text" id="searchInput" placeholder="e.g. Autism, GABA…"/>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Selected Entity</h3>
+        <div class="detail-box" id="detailBox">
+          <div style="color:var(--muted);font-size:.82rem">Click a node to see its relationships</div>
+        </div>
+      </div>
+
+      <div class="note">
+        In the PyKEEN/TransE assignment, this kind of graph was used for <strong>link prediction</strong> — given two entities, the model estimates the likelihood of a relationship between them using learned vector embeddings.
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+const TYPES = {disease:'#f85149', symptom:'#f0883e', treatment:'#3fb950', biomarker:'#d2a8ff'};
+
+const nodes = [
+  {id:'ASD',            label:'Autism Spectrum Disorder', type:'disease'},
+  {id:'ADHD',           label:'ADHD',                     type:'disease'},
+  {id:'Anxiety',        label:'Anxiety Disorder',          type:'disease'},
+  {id:'Depression',     label:'Depression',               type:'disease'},
+  {id:'Epilepsy',       label:'Epilepsy',                 type:'disease'},
+  {id:'Social_Diff',    label:'Social Difficulty',        type:'symptom'},
+  {id:'Comm_Imp',       label:'Communication Impairment', type:'symptom'},
+  {id:'Repetitive',     label:'Repetitive Behaviour',     type:'symptom'},
+  {id:'Hyperactivity',  label:'Hyperactivity',            type:'symptom'},
+  {id:'Attn_Deficit',   label:'Attention Deficit',        type:'symptom'},
+  {id:'Seizures',       label:'Seizures',                 type:'symptom'},
+  {id:'Mood_Changes',   label:'Mood Changes',             type:'symptom'},
+  {id:'Behav_Therapy',  label:'Behavioural Therapy',      type:'treatment'},
+  {id:'Speech_Therapy', label:'Speech Therapy',           type:'treatment'},
+  {id:'ABA',            label:'ABA Therapy',              type:'treatment'},
+  {id:'CBT',            label:'Cognitive Behavioural Therapy', type:'treatment'},
+  {id:'Medication',     label:'Medication',               type:'treatment'},
+  {id:'Serotonin',      label:'Serotonin',                type:'biomarker'},
+  {id:'GABA',           label:'GABA',                     type:'biomarker'},
+  {id:'SHANK3',         label:'SHANK3 Gene',              type:'biomarker'},
+];
+
+const links = [
+  {source:'ASD', target:'Social_Diff',    rel:'HAS_SYMPTOM'},
+  {source:'ASD', target:'Comm_Imp',       rel:'HAS_SYMPTOM'},
+  {source:'ASD', target:'Repetitive',     rel:'HAS_SYMPTOM'},
+  {source:'ASD', target:'Behav_Therapy',  rel:'TREATED_BY'},
+  {source:'ASD', target:'ABA',            rel:'TREATED_BY'},
+  {source:'ASD', target:'Speech_Therapy', rel:'TREATED_BY'},
+  {source:'ASD', target:'Serotonin',      rel:'ASSOCIATED_WITH'},
+  {source:'ASD', target:'SHANK3',         rel:'ASSOCIATED_WITH'},
+  {source:'ASD', target:'ADHD',           rel:'CO_OCCURS_WITH'},
+  {source:'ASD', target:'Anxiety',        rel:'CO_OCCURS_WITH'},
+  {source:'ADHD', target:'Hyperactivity', rel:'HAS_SYMPTOM'},
+  {source:'ADHD', target:'Attn_Deficit',  rel:'HAS_SYMPTOM'},
+  {source:'ADHD', target:'Medication',    rel:'TREATED_BY'},
+  {source:'ADHD', target:'CBT',           rel:'TREATED_BY'},
+  {source:'Anxiety', target:'Mood_Changes', rel:'HAS_SYMPTOM'},
+  {source:'Anxiety', target:'CBT',         rel:'TREATED_BY'},
+  {source:'Depression', target:'Mood_Changes', rel:'HAS_SYMPTOM'},
+  {source:'Depression', target:'Medication',   rel:'TREATED_BY'},
+  {source:'Depression', target:'CBT',          rel:'TREATED_BY'},
+  {source:'Epilepsy', target:'Seizures',       rel:'HAS_SYMPTOM'},
+  {source:'Epilepsy', target:'Medication',     rel:'TREATED_BY'},
+  {source:'Epilepsy', target:'GABA',           rel:'ASSOCIATED_WITH'},
+  {source:'SHANK3', target:'Serotonin',        rel:'REGULATES'},
+];
+
+const relColors = {
+  HAS_SYMPTOM:'#f0883e', TREATED_BY:'#3fb950', ASSOCIATED_WITH:'#d2a8ff',
+  CO_OCCURS_WITH:'#58a6ff', REGULATES:'#e3b341'
+};
+
+const svg = d3.select('#graph');
+const wrap = document.getElementById('graphWrap');
+const W = () => wrap.offsetWidth;
+const H = 520;
+
+const g = svg.append('g');
+
+// Zoom
+svg.call(d3.zoom().scaleExtent([0.3,3]).on('zoom', e => g.attr('transform', e.transform)));
+
+// Arrow markers
+const defs = svg.append('defs');
+Object.entries(relColors).forEach(([rel, color]) => {
+  defs.append('marker')
+    .attr('id','arrow-'+rel)
+    .attr('viewBox','0 -4 8 8')
+    .attr('refX',20).attr('refY',0)
+    .attr('markerWidth',6).attr('markerHeight',6)
+    .attr('orient','auto')
+    .append('path').attr('d','M0,-4L8,0L0,4').attr('fill',color).attr('opacity',0.7);
+});
+
+const simulation = d3.forceSimulation(nodes)
+  .force('link', d3.forceLink(links).id(d=>d.id).distance(120))
+  .force('charge', d3.forceManyBody().strength(-320))
+  .force('center', d3.forceCenter(W()/2, H/2))
+  .force('collision', d3.forceCollide(40));
+
+const link = g.append('g').selectAll('line')
+  .data(links).join('line')
+  .attr('stroke', d => relColors[d.rel] || '#444')
+  .attr('stroke-width', 1.5)
+  .attr('stroke-opacity', 0.5)
+  .attr('marker-end', d => `url(#arrow-${d.rel})`);
+
+const linkLabel = g.append('g').selectAll('text')
+  .data(links).join('text')
+  .attr('font-size', 8)
+  .attr('fill', d => relColors[d.rel] || '#8b949e')
+  .attr('text-anchor','middle')
+  .attr('opacity',0.7)
+  .text(d => d.rel.replace(/_/g,' '));
+
+const node = g.append('g').selectAll('g')
+  .data(nodes).join('g')
+  .attr('cursor','pointer')
+  .call(d3.drag()
+    .on('start', (e,d) => { if(!e.active) simulation.alphaTarget(0.3).restart(); d.fx=d.x; d.fy=d.y; })
+    .on('drag', (e,d) => { d.fx=e.x; d.fy=e.y; })
+    .on('end', (e,d) => { if(!e.active) simulation.alphaTarget(0); d.fx=null; d.fy=null; }));
+
+node.append('circle')
+  .attr('r', d => d.type==='disease' ? 18 : 13)
+  .attr('fill', d => TYPES[d.type])
+  .attr('fill-opacity', 0.15)
+  .attr('stroke', d => TYPES[d.type])
+  .attr('stroke-width', 2);
+
+node.append('text')
+  .attr('text-anchor','middle')
+  .attr('dy','0.35em')
+  .attr('font-size', d => d.type==='disease' ? 10 : 8.5)
+  .attr('font-weight', d => d.type==='disease' ? '600' : '400')
+  .attr('fill', d => TYPES[d.type])
+  .attr('font-family','Inter')
+  .text(d => d.label.length > 14 ? d.label.slice(0,13)+'…' : d.label);
+
+// Click to inspect
+node.on('click', (e, d) => {
+  const outLinks = links.filter(l => l.source.id===d.id || (typeof l.source==='string'&&l.source===d.id));
+  const inLinks  = links.filter(l => l.target.id===d.id || (typeof l.target==='string'&&l.target===d.id));
+  const relText = [
+    ...outLinks.map(l => `<span>${l.rel.replace(/_/g,' ')}</span> → ${typeof l.target==='object'?l.target.label:l.target}`),
+    ...inLinks.map(l  => `${typeof l.source==='object'?l.source.label:l.source} → <span>${l.rel.replace(/_/g,' ')}</span>`)
+  ].join('<br>');
+  document.getElementById('detailBox').innerHTML = `
+    <div class="d-name">${d.label}</div>
+    <div class="d-type">${d.type.toUpperCase()}</div>
+    <div class="d-rels">${relText || 'No relationships'}</div>
+  `;
+  // Highlight connected nodes
+  node.select('circle')
+    .attr('stroke-width', n => n.id===d.id ? 3 : outLinks.some(l=>(l.target.id||l.target)===n.id)||inLinks.some(l=>(l.source.id||l.source)===n.id) ? 2.5 : 2)
+    .attr('fill-opacity', n => n.id===d.id ? 0.35 : outLinks.some(l=>(l.target.id||l.target)===n.id)||inLinks.some(l=>(l.source.id||l.source)===n.id) ? 0.25 : 0.08);
+  link.attr('stroke-opacity', l => (l.source.id||l.source)===d.id||(l.target.id||l.target)===d.id ? 0.9 : 0.15);
+});
+
+simulation.on('tick', () => {
+  link
+    .attr('x1',d=>d.source.x).attr('y1',d=>d.source.y)
+    .attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
+  linkLabel
+    .attr('x',d=>(d.source.x+d.target.x)/2)
+    .attr('y',d=>(d.source.y+d.target.y)/2);
+  node.attr('transform',d=>`translate(${d.x},${d.y})`);
+});
+
+// Search
+document.getElementById('searchInput').addEventListener('input', e => {
+  const q = e.target.value.toLowerCase();
+  node.select('circle')
+    .attr('fill-opacity', d => !q || d.label.toLowerCase().includes(q) || d.id.toLowerCase().includes(q) ? 0.25 : 0.05)
+    .attr('stroke-width', d => !q || d.label.toLowerCase().includes(q) || d.id.toLowerCase().includes(q) ? 3 : 1);
+  node.select('text')
+    .attr('opacity', d => !q || d.label.toLowerCase().includes(q) || d.id.toLowerCase().includes(q) ? 1 : 0.2);
+  link.attr('stroke-opacity', d =>
+    !q || [d.source.id,d.target.id,d.source,d.target].some(v=>typeof v==='string'&&v.toLowerCase().includes(q)) ? 0.5 : 0.05);
+});
+</script>
+</body>
+</html>

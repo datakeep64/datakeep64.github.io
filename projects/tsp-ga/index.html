@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TSP — Genetic Algorithm</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#0d1117;--surface:#161b22;--surface2:#1c2128;--border:#30363d;--text:#e6edf3;--muted:#8b949e;--accent:#58a6ff;--green:#3fb950;--purple:#d2a8ff;--orange:#f0883e}
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+    a{color:var(--accent);text-decoration:none}
+    nav{position:sticky;top:0;z-index:100;background:rgba(13,17,23,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:60px}
+    .nav-brand{font-size:.9rem;color:var(--muted)}
+    .nav-brand a{color:var(--muted)}
+    .nav-title{font-size:.9rem;font-weight:600}
+    main{max-width:1100px;margin:0 auto;padding:2rem 1.5rem}
+    h1{font-size:1.6rem;font-weight:700;letter-spacing:-.02em;margin-bottom:.4rem}
+    .subtitle{color:var(--muted);font-size:.9rem;margin-bottom:2rem}
+    .tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:.72rem;background:rgba(88,166,255,.1);color:var(--accent);border:1px solid rgba(88,166,255,.2);padding:.15rem .55rem;border-radius:4px;margin-right:.4rem}
+    .layout{display:grid;grid-template-columns:1fr 320px;gap:1.5rem;margin-top:1.5rem}
+    canvas{display:block}
+    #routeCanvas{width:100%;border-radius:12px;background:var(--surface);border:1px solid var(--border)}
+    .panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.25rem;display:flex;flex-direction:column;gap:1rem}
+    .stat-row{display:flex;justify-content:space-between;align-items:center;padding:.6rem .8rem;background:var(--surface2);border-radius:8px}
+    .stat-label{font-size:.8rem;color:var(--muted)}
+    .stat-value{font-family:'JetBrains Mono',monospace;font-size:.9rem;font-weight:600;color:var(--accent)}
+    .control-label{font-size:.8rem;color:var(--muted);margin-bottom:.3rem}
+    input[type=range]{width:100%;accent-color:var(--accent)}
+    .btn-row{display:flex;gap:.6rem}
+    .btn{flex:1;padding:.55rem;border-radius:8px;font-size:.82rem;font-weight:500;cursor:pointer;border:none;transition:all .15s}
+    .btn-primary{background:var(--accent);color:#0d1117}
+    .btn-primary:hover{background:#79b8ff}
+    .btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+    .btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+    .btn-danger{background:rgba(240,136,62,.15);color:var(--orange);border:1px solid rgba(240,136,62,.3)}
+    .btn-danger:hover{background:rgba(240,136,62,.25)}
+    #chartCanvas{width:100%;border-radius:8px;background:var(--surface2);border:1px solid var(--border);margin-top:.5rem}
+    .section-label{font-size:.72rem;font-family:'JetBrains Mono',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem}
+    .note{font-size:.78rem;color:var(--muted);line-height:1.6;padding:.75rem;background:var(--surface2);border-radius:8px;border-left:3px solid var(--accent)}
+    @media(max-width:768px){.layout{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<nav>
+  <span class="nav-brand"><a href="../../index.html">← Home</a></span>
+  <span class="nav-title">Genetic Algorithm — TSP</span>
+</nav>
+<main>
+  <h1>Travelling Salesman Problem</h1>
+  <p class="subtitle">
+    <span class="tag">Reasoning Systems</span>
+    <span class="tag">Evolutionary Computation</span>
+    Optimising a route through all cities using a genetic algorithm — tournament selection, order crossover, and elitism.
+  </p>
+
+  <div class="layout">
+    <div>
+      <canvas id="routeCanvas" height="460"></canvas>
+      <canvas id="chartCanvas" height="130"></canvas>
+    </div>
+
+    <div class="panel">
+      <div>
+        <div class="section-label">Statistics</div>
+        <div style="display:flex;flex-direction:column;gap:.4rem">
+          <div class="stat-row"><span class="stat-label">Generation</span><span class="stat-value" id="genStat">0</span></div>
+          <div class="stat-row"><span class="stat-label">Best Distance</span><span class="stat-value" id="distStat">—</span></div>
+          <div class="stat-row"><span class="stat-label">Population</span><span class="stat-value" id="popStat">60</span></div>
+          <div class="stat-row"><span class="stat-label">Mutation Rate</span><span class="stat-value" id="mutStat">20%</span></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-label">Controls</div>
+        <div class="control-label">Population size: <span id="popLabel">60</span></div>
+        <input type="range" id="popSlider" min="20" max="200" value="60" step="10"/>
+        <div class="control-label" style="margin-top:.6rem">Mutation rate: <span id="mutLabel">20%</span></div>
+        <input type="range" id="mutSlider" min="1" max="50" value="20"/>
+        <div class="control-label" style="margin-top:.6rem">Speed: <span id="speedLabel">Normal</span></div>
+        <input type="range" id="speedSlider" min="1" max="5" value="3"/>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" id="runBtn">Run</button>
+        <button class="btn btn-secondary" id="stepBtn">Step</button>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" id="shuffleBtn">New Cities</button>
+        <button class="btn btn-danger" id="resetBtn">Reset</button>
+      </div>
+
+      <div class="note">
+        Each generation keeps the best routes (elitism), combines parent routes using order crossover, and introduces small random swaps as mutation. Distance decreases as the population converges.
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+const routeCanvas = document.getElementById('routeCanvas');
+const chartCanvas = document.getElementById('chartCanvas');
+const rctx = routeCanvas.getContext('2d');
+const cctx = chartCanvas.getContext('2d');
+
+// Resize canvas to match display size
+function resizeCanvases() {
+  routeCanvas.width = routeCanvas.offsetWidth;
+  chartCanvas.width = chartCanvas.offsetWidth;
+}
+resizeCanvases();
+window.addEventListener('resize', () => { resizeCanvases(); drawRoute(); drawChart(); });
+
+// Cities
+let cities = [];
+function generateCities(n = 14) {
+  const pad = 60;
+  const W = routeCanvas.width - pad*2;
+  const H = routeCanvas.height - pad*2;
+  cities = Array.from({length: n}, () => ({
+    x: pad + Math.random() * W,
+    y: pad + Math.random() * H
+  }));
+}
+generateCities();
+
+// TSP + GA
+let ga = null;
+let bestHistory = [];
+let running = false;
+let animFrame = null;
+
+class TSP {
+  constructor(cities) {
+    this.cities = cities;
+    this.n = cities.length;
+    this.dist = this.buildDist();
+  }
+  buildDist() {
+    const d = Array.from({length: this.n}, () => new Float64Array(this.n));
+    for (let i = 0; i < this.n; i++)
+      for (let j = 0; j < this.n; j++) {
+        const dx = this.cities[i].x - this.cities[j].x;
+        const dy = this.cities[i].y - this.cities[j].y;
+        d[i][j] = Math.sqrt(dx*dx + dy*dy);
+      }
+    return d;
+  }
+  routeLen(route) {
+    let t = 0;
+    for (let i = 0; i < route.length; i++)
+      t += this.dist[route[i]][route[(i+1) % route.length]];
+    return t;
+  }
+}
+
+class GA {
+  constructor(problem, popSize, mutRate) {
+    this.p = problem;
+    this.popSize = popSize;
+    this.mutRate = mutRate / 100;
+    this.elitism = Math.max(2, Math.floor(popSize * 0.05));
+    this.tournK = 3;
+    this.pop = this.initPop();
+    this.gen = 0;
+    this.bestRoute = null;
+    this.bestLen = Infinity;
+  }
+  initPop() {
+    const base = Array.from({length: this.p.n}, (_, i) => i);
+    return Array.from({length: this.popSize}, () => {
+      const r = [...base];
+      for (let i = r.length-1; i > 0; i--) {
+        const j = Math.floor(Math.random()*(i+1));
+        [r[i],r[j]] = [r[j],r[i]];
+      }
+      return r;
+    });
+  }
+  select() {
+    let best = null, bestL = Infinity;
+    for (let i = 0; i < this.tournK; i++) {
+      const c = this.pop[Math.floor(Math.random()*this.pop.length)];
+      const l = this.p.routeLen(c);
+      if (l < bestL) { bestL = l; best = c; }
+    }
+    return best;
+  }
+  crossover(p1, p2) {
+    const n = p1.length;
+    let a = Math.floor(Math.random()*n), b = Math.floor(Math.random()*n);
+    if (a > b) [a,b] = [b,a];
+    const child = new Array(n).fill(-1);
+    for (let i = a; i <= b; i++) child[i] = p1[i];
+    const fill = p2.filter(g => !child.includes(g));
+    let fi = 0;
+    for (let i = 0; i < n; i++) if (child[i] === -1) child[i] = fill[fi++];
+    return child;
+  }
+  mutate(route) {
+    const r = [...route];
+    const i = Math.floor(Math.random()*r.length);
+    const j = Math.floor(Math.random()*r.length);
+    [r[i],r[j]] = [r[j],r[i]];
+    return r;
+  }
+  step() {
+    this.pop.sort((a,b) => this.p.routeLen(a) - this.p.routeLen(b));
+    const curLen = this.p.routeLen(this.pop[0]);
+    if (curLen < this.bestLen) { this.bestLen = curLen; this.bestRoute = [...this.pop[0]]; }
+    const next = this.pop.slice(0, this.elitism);
+    while (next.length < this.popSize) {
+      const p1 = this.select(), p2 = this.select();
+      let child = Math.random() < 0.9 ? this.crossover(p1,p2) : [...p1];
+      if (Math.random() < this.mutRate) child = this.mutate(child);
+      next.push(child);
+    }
+    this.pop = next;
+    this.gen++;
+  }
+}
+
+function initGA() {
+  const popSize = parseInt(document.getElementById('popSlider').value);
+  const mutRate = parseInt(document.getElementById('mutSlider').value);
+  const problem = new TSP(cities);
+  ga = new GA(problem, popSize, mutRate);
+  bestHistory = [];
+}
+
+// Drawing
+function drawRoute() {
+  const W = routeCanvas.width, H = routeCanvas.height;
+  rctx.clearRect(0, 0, W, H);
+  rctx.fillStyle = '#161b22';
+  rctx.fillRect(0, 0, W, H);
+
+  if (ga && ga.bestRoute) {
+    const route = ga.bestRoute;
+    rctx.beginPath();
+    rctx.strokeStyle = '#58a6ff';
+    rctx.lineWidth = 2;
+    rctx.globalAlpha = 0.7;
+    const first = cities[route[0]];
+    rctx.moveTo(first.x, first.y);
+    for (let i = 1; i < route.length; i++) rctx.lineTo(cities[route[i]].x, cities[route[i]].y);
+    rctx.closePath();
+    rctx.stroke();
+    rctx.globalAlpha = 1;
+  }
+
+  cities.forEach((c, i) => {
+    rctx.beginPath();
+    rctx.arc(c.x, c.y, 7, 0, Math.PI*2);
+    rctx.fillStyle = '#3fb950';
+    rctx.fill();
+    rctx.fillStyle = '#0d1117';
+    rctx.font = 'bold 9px Inter';
+    rctx.textAlign = 'center';
+    rctx.textBaseline = 'middle';
+    rctx.fillText(i+1, c.x, c.y);
+  });
+}
+
+function drawChart() {
+  const W = chartCanvas.width, H = chartCanvas.height;
+  cctx.clearRect(0, 0, W, H);
+  cctx.fillStyle = '#1c2128';
+  cctx.fillRect(0, 0, W, H);
+
+  if (bestHistory.length < 2) {
+    cctx.fillStyle = '#8b949e';
+    cctx.font = '12px Inter';
+    cctx.textAlign = 'center';
+    cctx.fillText('Convergence chart will appear here', W/2, H/2);
+    return;
+  }
+
+  const pad = 30;
+  const min = Math.min(...bestHistory) * 0.95;
+  const max = bestHistory[0] * 1.05;
+  const xScale = (W - pad*2) / (bestHistory.length - 1);
+  const yScale = (H - pad*2) / (max - min);
+
+  cctx.beginPath();
+  cctx.strokeStyle = '#58a6ff';
+  cctx.lineWidth = 1.5;
+  bestHistory.forEach((v, i) => {
+    const x = pad + i * xScale;
+    const y = H - pad - (v - min) * yScale;
+    i === 0 ? cctx.moveTo(x, y) : cctx.lineTo(x, y);
+  });
+  cctx.stroke();
+
+  cctx.fillStyle = '#8b949e';
+  cctx.font = '10px JetBrains Mono';
+  cctx.textAlign = 'left';
+  cctx.fillText('Distance', pad, 14);
+  cctx.textAlign = 'right';
+  cctx.fillText(`Gen ${bestHistory.length}`, W - pad, 14);
+}
+
+function updateStats() {
+  if (!ga) return;
+  document.getElementById('genStat').textContent = ga.gen;
+  document.getElementById('distStat').textContent = ga.bestLen < Infinity ? Math.round(ga.bestLen) : '—';
+  document.getElementById('popStat').textContent = ga.popSize;
+  document.getElementById('mutStat').textContent = Math.round(ga.mutRate * 100) + '%';
+}
+
+// Speed map
+function getDelay() {
+  const v = parseInt(document.getElementById('speedSlider').value);
+  const labels = ['Very Slow','Slow','Normal','Fast','Max'];
+  document.getElementById('speedLabel').textContent = labels[v-1];
+  return [400, 150, 50, 10, 0][v-1];
+}
+
+// Controls
+document.getElementById('popSlider').addEventListener('input', e => {
+  document.getElementById('popLabel').textContent = e.target.value;
+});
+document.getElementById('mutSlider').addEventListener('input', e => {
+  document.getElementById('mutLabel').textContent = e.target.value + '%';
+});
+
+let loopTimeout = null;
+function stopLoop() {
+  running = false;
+  if (loopTimeout) clearTimeout(loopTimeout);
+  if (animFrame) cancelAnimationFrame(animFrame);
+  document.getElementById('runBtn').textContent = 'Run';
+}
+
+function runLoop() {
+  if (!running) return;
+  const delay = getDelay();
+  const stepsPerFrame = delay === 0 ? 10 : 1;
+  for (let i = 0; i < stepsPerFrame; i++) {
+    ga.step();
+    bestHistory.push(ga.bestLen);
+  }
+  drawRoute();
+  drawChart();
+  updateStats();
+  if (ga.gen >= 1000) { stopLoop(); return; }
+  if (delay === 0) animFrame = requestAnimationFrame(runLoop);
+  else loopTimeout = setTimeout(runLoop, delay);
+}
+
+document.getElementById('runBtn').addEventListener('click', () => {
+  if (!ga) initGA();
+  if (running) { stopLoop(); return; }
+  running = true;
+  document.getElementById('runBtn').textContent = 'Pause';
+  runLoop();
+});
+
+document.getElementById('stepBtn').addEventListener('click', () => {
+  stopLoop();
+  if (!ga) initGA();
+  ga.step();
+  bestHistory.push(ga.bestLen);
+  drawRoute(); drawChart(); updateStats();
+});
+
+document.getElementById('shuffleBtn').addEventListener('click', () => {
+  stopLoop();
+  generateCities();
+  ga = null;
+  bestHistory = [];
+  drawRoute(); drawChart();
+  updateStats();
+  document.getElementById('genStat').textContent = '0';
+  document.getElementById('distStat').textContent = '—';
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  stopLoop();
+  ga = null;
+  bestHistory = [];
+  drawRoute(); drawChart();
+  document.getElementById('genStat').textContent = '0';
+  document.getElementById('distStat').textContent = '—';
+});
+
+// Init
+initGA();
+drawRoute();
+drawChart();
+</script>
+</body>
+</html>

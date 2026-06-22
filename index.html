@@ -397,6 +397,7 @@
     <ul class="nav-links">
       <li><a href="#foundation">Background</a></li>
       <li><a href="#projects">Projects</a></li>
+      <li><a href="#applied">Applied AI</a></li>
       <li><a href="#writing">Writing</a></li>
       <li><a href="https://github.com/datakeep64" target="_blank">GitHub</a></li>
     </ul>
@@ -483,9 +484,9 @@
 
     <div class="projects-grid">
 
-      <div class="project-card">
-        <div class="project-status status-soon">
-          <span class="status-dot"></span> In Progress
+      <a class="project-card live" href="projects/tsp-ga/" style="text-decoration:none;color:inherit;display:block">
+        <div class="project-status status-live">
+          <span class="status-dot"></span> Live
         </div>
         <div class="project-title">Genetic Algorithm — Travelling Salesman</div>
         <div class="project-desc">
@@ -493,11 +494,11 @@
           Adjust mutation rate, population size, and watch convergence happen in real time.
         </div>
         <div class="project-module">→ Reasoning Systems · Evolutionary Computation</div>
-      </div>
+      </a>
 
-      <div class="project-card">
-        <div class="project-status status-soon">
-          <span class="status-dot"></span> In Progress
+      <a class="project-card live" href="projects/word-embeddings/" style="text-decoration:none;color:inherit;display:block">
+        <div class="project-status status-live">
+          <span class="status-dot"></span> Live
         </div>
         <div class="project-title">Word Embedding Explorer</div>
         <div class="project-desc">
@@ -505,11 +506,11 @@
           Reduced to 2D with PCA and navigable interactively.
         </div>
         <div class="project-module">→ Cognitive Systems · Representation Learning</div>
-      </div>
+      </a>
 
-      <div class="project-card">
-        <div class="project-status status-soon">
-          <span class="status-dot"></span> In Progress
+      <a class="project-card live" href="projects/nqueens/" style="text-decoration:none;color:inherit;display:block">
+        <div class="project-status status-live">
+          <span class="status-dot"></span> Live
         </div>
         <div class="project-title">N-Queens Constraint Solver</div>
         <div class="project-desc">
@@ -517,31 +518,30 @@
           Adjustable board size, with each decision made visible.
         </div>
         <div class="project-module">→ Machine Reasoning · Constraint Satisfaction</div>
-      </div>
+      </a>
 
-      <div class="project-card">
-        <div class="project-status status-soon">
-          <span class="status-dot"></span> In Progress
+      <a class="project-card live" href="projects/asd-classifier/" style="text-decoration:none;color:inherit;display:block">
+        <div class="project-status status-live">
+          <span class="status-dot"></span> Live
         </div>
         <div class="project-title">ASD Classification — DT vs kNN vs Bayes</div>
         <div class="project-desc">
-          Enter feature values and see how three different classifiers each arrive at a prediction —
+          Answer Q-Chat-10 screening questions and see how three different classifiers each arrive at a prediction —
           and why they sometimes disagree.
         </div>
         <div class="project-module">→ Machine Reasoning · Pattern Classification</div>
-      </div>
+      </a>
 
-      <div class="project-card">
-        <div class="project-status status-soon">
-          <span class="status-dot"></span> In Progress
+      <a class="project-card live" href="projects/knowledge-graph/" style="text-decoration:none;color:inherit;display:block">
+        <div class="project-status status-live">
+          <span class="status-dot"></span> Live
         </div>
         <div class="project-title">Knowledge Graph Explorer</div>
         <div class="project-desc">
-          Navigate entity relationships in a medical knowledge base. Built on PyKEEN with TransE embeddings
-          for link prediction.
+          Navigate entity relationships in a medical knowledge base. Drag nodes, search entities, and explore relationships — inspired by the PyKEEN/TransE assignment on UMLS.
         </div>
         <div class="project-module">→ Machine Reasoning · Knowledge Representation</div>
-      </div>
+      </a>
 
       <div class="project-card">
         <div class="project-status status-soon">
@@ -560,6 +560,82 @@
     <div style="margin-top: 1.5rem; padding: 1rem 1.5rem; background: var(--surface2); border-radius: 8px; border: 1px solid var(--border); font-size: 0.85rem; color: var(--text-muted);">
       All project source code, implementation notes, and model details are documented in the
       <a href="https://github.com/datakeep64" target="_blank">GitHub repository</a>.
+    </div>
+  </section>
+
+  <section id="applied">
+    <div class="section-label">Applied AI Projects</div>
+    <h2 class="section-title">End-to-End Builds</h2>
+    <p class="section-body">
+      Independent projects built outside coursework — focused on NLP pipelines, LLM applications,
+      and production-grade ML engineering. Each one targets a real problem and is built to run end-to-end.
+    </p>
+
+    <div class="projects-grid">
+
+      <div class="project-card live">
+        <div class="project-status status-soon">
+          <span class="status-dot"></span> In Progress
+        </div>
+        <div class="project-title">News Intelligence System</div>
+        <div class="project-desc">
+          End-to-end pipeline for news processing — collection, text preprocessing, topic classification,
+          summarisation, and embedding-based search for retrieval. Integrates NLP and information retrieval
+          into a unified system.
+        </div>
+        <div class="module-tags" style="margin-top:1rem">
+          <span class="tag">NLP</span>
+          <span class="tag">Classification</span>
+          <span class="tag">Embeddings</span>
+          <span class="tag">RAG</span>
+          <span class="tag">BeautifulSoup</span>
+        </div>
+        <div style="margin-top:1.25rem">
+          <a href="projects/news-intelligence/" class="btn btn-outline" style="font-size:0.8rem;padding:0.4rem 1rem;">View Project →</a>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <div class="project-status status-soon">
+          <span class="status-dot"></span> Prototype
+        </div>
+        <div class="project-title">LLM-Based Media Assistant</div>
+        <div class="project-desc">
+          Prototypes using OpenAI API for article summarisation, sentiment analysis, and text transformation —
+          headline rewriting and content restructuring for media workflows.
+        </div>
+        <div class="module-tags" style="margin-top:1rem">
+          <span class="tag">OpenAI API</span>
+          <span class="tag">Summarisation</span>
+          <span class="tag">Sentiment</span>
+          <span class="tag">Prompt Engineering</span>
+        </div>
+        <div style="margin-top:1.25rem">
+          <a href="projects/llm-media-assistant/" class="btn btn-outline" style="font-size:0.8rem;padding:0.4rem 1rem;">View Project →</a>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <div class="project-status status-soon">
+          <span class="status-dot"></span> In Progress
+        </div>
+        <div class="project-title">ML Pipeline Automation System</div>
+        <div class="project-desc">
+          A reproducible machine learning workflow covering data preprocessing, model training, evaluation,
+          and deployment — containerised with Docker and automated via GitHub Actions CI/CD.
+        </div>
+        <div class="module-tags" style="margin-top:1rem">
+          <span class="tag">Docker</span>
+          <span class="tag">GitHub Actions</span>
+          <span class="tag">Scikit-learn</span>
+          <span class="tag">FastAPI</span>
+          <span class="tag">MLOps</span>
+        </div>
+        <div style="margin-top:1.25rem">
+          <a href="projects/ml-pipeline/" class="btn btn-outline" style="font-size:0.8rem;padding:0.4rem 1rem;">View Project →</a>
+        </div>
+      </div>
+
     </div>
   </section>
 

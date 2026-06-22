@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ASD Classifier — DT vs kNN vs Bayes</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#0d1117;--surface:#161b22;--surface2:#1c2128;--border:#30363d;--text:#e6edf3;--muted:#8b949e;--accent:#58a6ff;--green:#3fb950;--red:#f85149;--orange:#f0883e;--purple:#d2a8ff}
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+    a{color:var(--accent);text-decoration:none}
+    nav{position:sticky;top:0;z-index:100;background:rgba(13,17,23,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:60px}
+    .nav-brand{font-size:.9rem;color:var(--muted)}
+    .nav-title{font-size:.9rem;font-weight:600}
+    main{max-width:1000px;margin:0 auto;padding:2rem 1.5rem}
+    h1{font-size:1.6rem;font-weight:700;letter-spacing:-.02em;margin-bottom:.4rem}
+    .subtitle{color:var(--muted);font-size:.9rem;margin-bottom:2rem}
+    .tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:.72rem;background:rgba(88,166,255,.1);color:var(--accent);border:1px solid rgba(88,166,255,.2);padding:.15rem .55rem;border-radius:4px;margin-right:.4rem}
+    .layout{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.25rem}
+    .card h3{font-size:.95rem;font-weight:600;margin-bottom:1rem}
+    .question-list{display:flex;flex-direction:column;gap:.5rem}
+    .q-item{display:flex;align-items:center;justify-content:space-between;padding:.55rem .8rem;background:var(--surface2);border-radius:8px;gap:.8rem}
+    .q-text{font-size:.82rem;color:var(--text);flex:1}
+    .q-code{font-size:.72rem;font-family:'JetBrains Mono',monospace;color:var(--accent);margin-right:.5rem;min-width:22px}
+    .toggle{position:relative;width:40px;height:22px;flex-shrink:0}
+    .toggle input{opacity:0;width:0;height:0}
+    .slider{position:absolute;cursor:pointer;inset:0;background:var(--border);border-radius:11px;transition:.2s}
+    .slider:before{content:'';position:absolute;width:16px;height:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s}
+    input:checked + .slider{background:var(--accent)}
+    input:checked + .slider:before{transform:translateX(18px)}
+    .demo-section{display:flex;gap:.8rem;flex-wrap:wrap}
+    .demo-select{flex:1;min-width:120px}
+    .demo-select label{display:block;font-size:.78rem;color:var(--muted);margin-bottom:.3rem}
+    .demo-select select{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:.45rem .6rem;border-radius:6px;font-size:.82rem}
+    .results-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-top:1.5rem}
+    .result-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.25rem;text-align:center}
+    .result-card h4{font-size:.8rem;color:var(--muted);margin-bottom:.8rem;font-weight:500}
+    .result-label{font-size:1.1rem;font-weight:700;margin-bottom:.5rem}
+    .result-label.asd{color:var(--red)}
+    .result-label.not-asd{color:var(--green)}
+    .result-label.borderline{color:var(--orange)}
+    .conf-bar-wrap{background:var(--surface2);border-radius:4px;height:6px;margin:.5rem 0}
+    .conf-bar{height:6px;border-radius:4px;transition:width .4s}
+    .conf-bar.asd{background:var(--red)}
+    .conf-bar.not-asd{background:var(--green)}
+    .conf-bar.borderline{background:var(--orange)}
+    .conf-pct{font-size:.75rem;color:var(--muted);font-family:'JetBrains Mono',monospace}
+    .path-trace{font-size:.72rem;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-top:.6rem;text-align:left;line-height:1.8}
+    .path-step{display:block;padding:.1rem 0}
+    .path-step::before{content:'→ ';color:var(--accent)}
+    .predict-btn{width:100%;padding:.7rem;background:var(--accent);color:#0d1117;border:none;border-radius:8px;font-size:.9rem;font-weight:600;cursor:pointer;margin-top:1rem;transition:background .15s}
+    .predict-btn:hover{background:#79b8ff}
+    .note{font-size:.78rem;color:var(--muted);line-height:1.6;padding:.75rem;background:var(--surface2);border-radius:8px;border-left:3px solid var(--accent);margin-top:1.5rem}
+    .disclaimer{font-size:.75rem;color:var(--muted);text-align:center;margin-top:1rem;padding:.75rem;background:rgba(248,81,73,.06);border:1px solid rgba(248,81,73,.15);border-radius:8px}
+    @media(max-width:700px){.layout{grid-template-columns:1fr}.results-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<nav>
+  <span class="nav-brand"><a href="../../index.html">← Home</a></span>
+  <span class="nav-title">ASD Classifier — 3 Approaches</span>
+</nav>
+<main>
+  <h1>ASD Traits Classifier</h1>
+  <p class="subtitle">
+    <span class="tag">Machine Reasoning</span>
+    <span class="tag">Pattern Classification</span>
+    Answer the Q-Chat-10 screening questions and see how three classifiers — Decision Tree, kNN, and Naive Bayes — each arrive at a prediction, and why they sometimes disagree.
+  </p>
+
+  <div class="layout">
+    <div class="card">
+      <h3>Q-Chat-10 Screening Questions</h3>
+      <div class="question-list" id="questionList"></div>
+    </div>
+
+    <div class="card">
+      <h3>Additional Information</h3>
+      <div class="demo-section">
+        <div class="demo-select">
+          <label>Child's Sex</label>
+          <select id="sexSelect"><option value="0">Female</option><option value="1">Male</option></select>
+        </div>
+        <div class="demo-select">
+          <label>Jaundice at birth?</label>
+          <select id="jaundiceSelect"><option value="0">No</option><option value="1">Yes</option></select>
+        </div>
+        <div class="demo-select">
+          <label>Family member with ASD?</label>
+          <select id="familySelect"><option value="0">No</option><option value="1">Yes</option></select>
+        </div>
+      </div>
+
+      <button class="predict-btn" id="predictBtn">Predict</button>
+
+      <div class="note" style="margin-top:1rem">
+        The <strong>Decision Tree</strong> follows explicit branching rules learned from 1,054 toddler screening records. <strong>kNN</strong> finds the 5 most similar cases in the training data. <strong>Naive Bayes</strong> estimates probability using feature likelihoods learned from the dataset.
+      </div>
+      <div class="disclaimer">
+        This is a demonstration of ML classification methods only. It is not a medical diagnostic tool.
+      </div>
+    </div>
+  </div>
+
+  <div class="results-grid" id="resultsGrid">
+    <div class="result-card"><h4>Decision Tree</h4><div style="color:var(--muted);font-size:.85rem">Answer questions above and click Predict</div></div>
+    <div class="result-card"><h4>k-Nearest Neighbours (k=5)</h4><div style="color:var(--muted);font-size:.85rem">Answer questions above and click Predict</div></div>
+    <div class="result-card"><h4>Naive Bayes</h4><div style="color:var(--muted);font-size:.85rem">Answer questions above and click Predict</div></div>
+  </div>
+</main>
+
+<script>
+const QUESTIONS = [
+  "Does your child look at you when you call his/her name?",
+  "How easy is it to get eye contact with your child?",
+  "Does your child point to indicate that s/he wants something?",
+  "Does your child point to share interest with you?",
+  "Does your child pretend? (e.g. care for dolls, talk on a toy phone)",
+  "Does your child follow where you're looking?",
+  "If someone is visibly upset, does your child show signs of wanting to comfort them?",
+  "Would you describe your child's first words as typical?",
+  "Does your child use simple gestures? (e.g. wave goodbye)",
+  "Does your child stare at nothing with no apparent purpose?"
+];
+
+// Build question toggles
+const qList = document.getElementById('questionList');
+QUESTIONS.forEach((q, i) => {
+  const div = document.createElement('div');
+  div.className = 'q-item';
+  div.innerHTML = `
+    <span class="q-code">A${i+1}</span>
+    <span class="q-text">${q}</span>
+    <label class="toggle">
+      <input type="checkbox" id="q${i}" ${i < 6 ? 'checked' : ''}>
+      <span class="slider"></span>
+    </label>
+  `;
+  qList.appendChild(div);
+});
+
+function getFeatures() {
+  const A = Array.from({length:10}, (_,i) => document.getElementById(`q${i}`).checked ? 1 : 0);
+  const sex = parseInt(document.getElementById('sexSelect').value);
+  const jaundice = parseInt(document.getElementById('jaundiceSelect').value);
+  const family = parseInt(document.getElementById('familySelect').value);
+  return {A, sex, jaundice, family};
+}
+
+// === DECISION TREE (from tree_rules.txt) ===
+function predictDT({A}) {
+  const [A1,A2,A3,A4,A5,A6,A7,A8,A9,A10] = A;
+  let path = [];
+  if (A7 <= 0) {
+    path.push('A7 = No (no comfort response)');
+    if (A9 <= 0) {
+      path.push('A9 = No (no gestures)');
+      if (A2 <= 0) {
+        path.push('A2 = No (limited eye contact)');
+        return {pred:'Not ASD', conf:0.93, cls:'not-asd', path};
+      } else {
+        path.push('A2 = Yes (eye contact present)');
+        return {pred:'Borderline', conf:0.51, cls:'borderline', path};
+      }
+    } else {
+      path.push('A9 = Yes (uses gestures)');
+      if (A6 <= 0) {
+        path.push('A6 = No (does not follow gaze)');
+        return {pred:'ASD', conf:0.56, cls:'asd', path};
+      } else {
+        path.push('A6 = Yes (follows gaze)');
+        return {pred:'ASD', conf:0.95, cls:'asd', path};
+      }
+    }
+  } else {
+    path.push('A7 = Yes (shows comfort response)');
+    if (A9 <= 0) {
+      path.push('A9 = No (no gestures)');
+      if (A2 <= 0) {
+        path.push('A2 = No (limited eye contact)');
+        return {pred:'ASD', conf:0.57, cls:'asd', path};
+      } else {
+        path.push('A2 = Yes (eye contact present)');
+        return {pred:'ASD', conf:0.97, cls:'asd', path};
+      }
+    } else {
+      path.push('A9 = Yes (uses gestures)');
+      return {pred:'ASD', conf:0.98, cls:'asd', path};
+    }
+  }
+}
+
+// === KNN (k=5, embedded training data) ===
+const TRAINING = [[0,0,0,0,0,0,1,1,0,1,0,1,0,0],[1,0,0,1,1,1,1,1,1,0,1,0,0,1],[0,0,0,0,0,0,0,0,0,1,0,0,0,0],[0,0,0,0,0,0,0,0,0,1,0,0,0,0],[0,1,0,0,0,0,0,0,0,1,1,0,0,0],[0,0,1,1,0,0,0,0,0,0,1,0,0,0],[0,1,0,1,1,0,1,0,0,1,1,0,0,1],[1,1,1,1,1,1,1,1,1,0,1,0,0,1],[0,1,0,1,1,1,1,1,1,1,1,0,0,1],[0,1,0,1,0,1,1,1,0,0,0,0,0,1],[1,1,1,1,1,1,1,1,0,1,0,0,0,1],[1,1,1,1,0,0,1,0,1,0,0,0,0,1],[1,1,1,1,1,1,1,1,1,1,0,0,0,1],[1,1,1,0,0,1,1,0,1,1,0,0,0,1],[1,1,1,1,1,1,1,1,1,1,1,0,0,1],[1,1,0,1,1,0,1,1,1,1,0,0,0,1],[0,0,0,0,0,0,0,0,0,0,1,0,1,0],[1,1,1,1,1,1,1,1,1,1,1,1,0,1],[0,0,0,1,1,1,1,0,0,0,1,1,0,1],[1,0,0,0,0,1,1,0,0,1,1,0,0,1],[1,1,1,1,1,1,1,1,0,1,1,0,1,1],[1,0,0,1,1,1,0,0,1,1,1,0,0,1],[1,1,0,1,0,1,1,0,1,1,0,0,0,1],[0,0,0,0,0,0,0,0,1,0,0,1,0,0],[1,1,1,1,1,1,1,1,1,0,0,1,0,1],[1,1,1,1,1,1,1,1,1,1,1,0,0,1],[1,1,0,0,0,0,1,0,0,1,1,1,0,1],[1,1,0,0,0,0,1,0,0,1,1,0,0,1],[1,0,1,1,0,1,1,0,1,1,0,0,0,1],[0,0,1,1,0,1,1,0,1,1,1,0,0,1],[1,1,1,1,1,1,1,1,1,0,1,0,1,1],[1,1,1,1,1,1,1,1,1,1,1,0,0,1],[0,0,0,0,1,0,0,1,1,1,1,0,0,1],[1,1,1,1,1,1,1,0,1,1,1,0,0,1],[1,1,1,1,1,0,1,1,1,1,0,1,0,1],[0,0,1,0,0,0,0,0,0,0,0,0,1,0],[1,1,0,0,0,0,0,0,0,0,1,0,0,0],[1,1,1,0,1,1,1,0,0,1,1,0,1,1],[0,0,0,1,0,0,1,0,0,1,1,0,0,0],[1,1,1,1,0,1,1,0,0,1,1,1,1,1],[1,1,0,1,1,1,1,0,0,0,0,0,0,1],[0,0,0,1,0,1,1,1,1,0,1,0,1,1],[1,1,0,0,0,0,1,1,0,0,1,0,0,1],[1,1,1,1,1,1,1,1,1,1,1,0,0,1],[1,1,0,0,0,1,1,0,0,1,1,1,0,1],[1,0,1,1,0,1,1,1,1,1,1,0,0,1],[0,0,0,0,0,0,0,1,0,1,1,0,1,0],[1,0,0,0,0,0,0,0,0,0,1,0,0,0],[1,1,0,1,1,1,1,0,0,0,1,0,1,1],[1,0,1,0,1,1,1,0,1,1,1,1,0,1],[0,0,0,0,0,1,0,0,0,1,1,0,0,0],[0,0,0,0,1,0,0,0,1,0,0,1,1,0],[0,0,0,0,0,0,0,0,0,1,1,0,0,0]];
+
+function predictKNN({A, sex, jaundice, family}, k=5) {
+  const query = [...A, sex, jaundice, family];
+  const dists = TRAINING.map(row => {
+    const feats = row.slice(0,13);
+    const label = row[13];
+    let d = 0;
+    feats.forEach((v, i) => { d += (v - query[i])**2; });
+    return {d: Math.sqrt(d), label};
+  });
+  dists.sort((a,b) => a.d - b.d);
+  const knn = dists.slice(0, k);
+  const asdVotes = knn.filter(n => n.label === 1).length;
+  const conf = asdVotes / k;
+  if (conf > 0.6) return {pred:'ASD', conf, cls:'asd', neighbours: knn};
+  if (conf < 0.4) return {pred:'Not ASD', conf:1-conf, cls:'not-asd', neighbours: knn};
+  return {pred:'Borderline', conf:0.5, cls:'borderline', neighbours: knn};
+}
+
+// === NAIVE BAYES ===
+// P(ASD) = 0.69, P(not ASD) = 0.31
+// P(A_i = 1 | ASD) and P(A_i = 1 | not ASD) estimated from data
+const P_ASD = 0.69, P_NOT = 0.31;
+const P_feat_given_asd = [0.82,0.83,0.71,0.82,0.74,0.77,0.80,0.68,0.74,0.75];
+const P_feat_given_not = [0.21,0.18,0.30,0.22,0.29,0.25,0.21,0.35,0.29,0.52];
+
+function predictBayes({A, jaundice, family}) {
+  let logASD = Math.log(P_ASD), logNOT = Math.log(P_NOT);
+  A.forEach((a, i) => {
+    const pA = a === 1 ? P_feat_given_asd[i] : (1 - P_feat_given_asd[i]);
+    const pN = a === 1 ? P_feat_given_not[i] : (1 - P_feat_given_not[i]);
+    logASD += Math.log(Math.max(pA, 1e-9));
+    logNOT += Math.log(Math.max(pN, 1e-9));
+  });
+  // Family and jaundice slight adjustments
+  logASD += jaundice ? Math.log(1.2) : 0;
+  logASD += family ? Math.log(1.5) : 0;
+
+  const maxLog = Math.max(logASD, logNOT);
+  const expASD = Math.exp(logASD - maxLog);
+  const expNOT = Math.exp(logNOT - maxLog);
+  const probASD = expASD / (expASD + expNOT);
+
+  if (probASD > 0.6) return {pred:'ASD', conf:probASD, cls:'asd'};
+  if (probASD < 0.4) return {pred:'Not ASD', conf:1-probASD, cls:'not-asd'};
+  return {pred:'Borderline', conf:0.5, cls:'borderline'};
+}
+
+function renderResults(dt, knn, bayes) {
+  const grid = document.getElementById('resultsGrid');
+  grid.innerHTML = '';
+
+  [[dt,'Decision Tree'],[knn,'kNN (k=5)'],[bayes,'Naive Bayes']].forEach(([res, name]) => {
+    const card = document.createElement('div');
+    card.className = 'result-card';
+    const pct = Math.round(res.conf * 100);
+    let extra = '';
+    if (name === 'Decision Tree' && res.path) {
+      extra = `<div class="path-trace"><strong style="color:var(--text)">Decision path:</strong><br>${res.path.map(p=>`<span class="path-step">${p}</span>`).join('')}</div>`;
+    }
+    if (name === 'kNN (k=5)' && res.neighbours) {
+      const asdN = res.neighbours.filter(n=>n.label===1).length;
+      extra = `<div class="path-trace">${asdN}/5 neighbours have ASD traits<br>Avg distance: ${(res.neighbours.slice(0,5).reduce((s,n)=>s+n.d,0)/5).toFixed(2)}</div>`;
+    }
+    card.innerHTML = `
+      <h4>${name}</h4>
+      <div class="result-label ${res.cls}">${res.pred}</div>
+      <div class="conf-bar-wrap"><div class="conf-bar ${res.cls}" style="width:${pct}%"></div></div>
+      <div class="conf-pct">${pct}% confidence</div>
+      ${extra}
+    `;
+    grid.appendChild(card);
+  });
+}
+
+document.getElementById('predictBtn').addEventListener('click', () => {
+  const features = getFeatures();
+  const dt = predictDT(features);
+  const knn = predictKNN(features);
+  const bayes = predictBayes(features);
+  renderResults(dt, knn, bayes);
+});
+</script>
+</body>
+</html>
