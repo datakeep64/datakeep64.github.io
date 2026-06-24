@@ -64,15 +64,17 @@
   <div class="status-badge" style="background:rgba(63,185,80,.1);color:#3fb950;border-color:rgba(63,185,80,.25)"><span class="status-dot"></span> Live</div>
   <h1>LLM-Based Media Assistant</h1>
   <p class="subtitle">
-    A prototype system using the OpenAI API to assist with media content workflows —
-    summarisation, sentiment analysis, and text transformation tasks including headline rewriting
-    and content restructuring.
+    A system using the OpenAI API to assist with media content workflows — summarisation,
+    <strong>groundedness verification</strong>, sentiment analysis, headline rewriting, and content
+    restructuring. The verifier directly tackles the biggest blocker to newsroom AI adoption:
+    catching hallucinated facts before they reach print.
   </p>
 
   <div class="tags">
     <span class="tag">Python</span>
     <span class="tag">OpenAI API</span>
     <span class="tag">Prompt Engineering</span>
+    <span class="tag">Faithfulness / NLI</span>
     <span class="tag">NLP</span>
     <span class="tag">Streamlit</span>
   </div>
@@ -80,18 +82,23 @@
   <hr class="divider"/>
 
   <h2>Capabilities</h2>
-  <p>Four distinct tasks prototyped, each using structured prompts to shape model output for a specific media use case.</p>
+  <p>Five distinct tasks, each using structured prompts to shape model output for a specific media use case.</p>
 
   <div class="capability-grid">
     <div class="cap-card">
       <div class="cap-icon">📄</div>
       <h3>Article Summarisation</h3>
-      <p>Condenses long-form news articles into concise summaries at configurable length — paragraph, bullet, or one-line.</p>
+      <p>Condenses long-form news articles into concise summaries at configurable length, streamed word-by-word as the model generates.</p>
+    </div>
+    <div class="cap-card">
+      <div class="cap-icon">✅</div>
+      <h3>Groundedness Verification</h3>
+      <p>Fact-checks a summary against its source using atomic-claim decomposition and textual entailment (the FActScore / SummaC approach). Flags hallucinations down to the individual claim, cites a verbatim supporting span for each verdict, and scores overall groundedness 0–100.</p>
     </div>
     <div class="cap-card">
       <div class="cap-icon">📊</div>
       <h3>Sentiment Analysis</h3>
-      <p>Classifies article tone as positive, negative, or neutral with a confidence score and key sentiment phrases extracted.</p>
+      <p>Chain-of-thought classification — the model cites evidence from the text before labelling tone, reducing inconsistent or hallucinated classifications.</p>
     </div>
     <div class="cap-card">
       <div class="cap-icon">✏️</div>
@@ -152,13 +159,14 @@
 
   <h2>Build Status</h2>
   <div class="progress-block">
-    <div class="progress-item"><span class="check done">✓</span> Summarisation prototype</div>
-    <div class="progress-item"><span class="check done">✓</span> Sentiment analysis prototype</div>
-    <div class="progress-item"><span class="check done">✓</span> Headline rewriting prototype</div>
-    <div class="progress-item"><span class="check wip">~</span> Content restructuring (in progress)</div>
-    <div class="progress-item"><span class="check wip">~</span> Streamlit UI to unify all tasks</div>
+    <div class="progress-item"><span class="check done">✓</span> Summarisation with streamed output</div>
+    <div class="progress-item"><span class="check done">✓</span> Groundedness verifier (claim extraction + entailment, unit-tested)</div>
+    <div class="progress-item"><span class="check done">✓</span> Chain-of-thought sentiment analysis</div>
+    <div class="progress-item"><span class="check done">✓</span> One-shot headline rewriting</div>
+    <div class="progress-item"><span class="check done">✓</span> Content restructuring with streamed output</div>
+    <div class="progress-item"><span class="check done">✓</span> Streamlit UI unifying all tasks + token usage tracking</div>
+    <div class="progress-item"><span class="check todo">·</span> Quote-integrity guard (verbatim quote preservation)</div>
     <div class="progress-item"><span class="check todo">·</span> Batch processing for multiple articles</div>
-    <div class="progress-item"><span class="check todo">·</span> Output comparison / evaluation layer</div>
   </div>
 
   <hr class="divider"/>
