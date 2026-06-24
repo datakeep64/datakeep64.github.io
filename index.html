@@ -374,11 +374,211 @@
 
     /* FOOTER */
     footer {
+      background: var(--surface);
       border-top: 1px solid var(--border);
-      text-align: center;
-      padding: 2rem;
-      font-size: 0.8rem;
+      padding: 2.5rem 2rem 1.5rem;
+    }
+
+    .footer-inner {
+      max-width: 860px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 2rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+
+    .footer-name {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.3rem;
+    }
+
+    .footer-role {
+      font-size: 0.78rem;
       color: var(--text-muted);
+      margin-bottom: 0.3rem;
+    }
+
+    .footer-cert {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+      opacity: 0.7;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 1.5rem;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .footer-copy {
+      max-width: 860px;
+      margin: 0 auto;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      opacity: 0.55;
+      text-align: center;
+    }
+
+    /* HERO ENHANCEMENTS */
+    .hero {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle, var(--border) 1px, transparent 1px);
+      background-size: 28px 28px;
+      opacity: 0.45;
+      pointer-events: none;
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      top: -30%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80%;
+      height: 90%;
+      background: radial-gradient(ellipse, rgba(88, 166, 255, 0.1) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* SECTION LABEL */
+    .section-label {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+    }
+
+    .section-label::after {
+      content: '';
+      display: inline-block;
+      width: 28px;
+      height: 1px;
+      background: var(--accent);
+      opacity: 0.5;
+      flex-shrink: 0;
+    }
+
+    /* MODULE CARD BORDERS */
+    .module-mr { border-left: 3px solid var(--accent); padding-left: calc(1.5rem - 2px); }
+    .module-rs { border-left: 3px solid var(--accent2); padding-left: calc(1.5rem - 2px); }
+    .module-cs { border-left: 3px solid var(--accent3); padding-left: calc(1.5rem - 2px); }
+
+    /* PROJECT CARD GRADIENT BORDER */
+    .project-card {
+      isolation: isolate;
+    }
+
+    .project-card::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: 13px;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent3) 50%, var(--accent2) 100%);
+      z-index: -1;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      pointer-events: none;
+    }
+
+    .project-card:hover {
+      border-color: transparent;
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+    }
+
+    .project-card:hover::before {
+      opacity: 1;
+    }
+
+    .project-card.live::before {
+      background: linear-gradient(135deg, var(--accent2) 0%, var(--accent) 50%, var(--accent3) 100%);
+    }
+
+    .project-card.live:hover {
+      border-color: transparent;
+    }
+
+    /* WRITING CARDS */
+    .writing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 0.75rem;
+      margin-top: 2rem;
+    }
+
+    .writing-card {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem 4.5rem 1.25rem 1.5rem;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .writing-card:hover {
+      border-color: rgba(88, 166, 255, 0.35);
+      transform: translateY(-2px);
+    }
+
+    .writing-badge {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      font-size: 0.68rem;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--accent3);
+      background: rgba(210, 168, 255, 0.1);
+      border: 1px solid rgba(210, 168, 255, 0.2);
+      padding: 0.15rem 0.55rem;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+
+    .writing-cat {
+      font-size: 0.72rem;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.45rem;
+    }
+
+    .writing-headline {
+      font-size: 0.875rem;
+      color: var(--text);
+      line-height: 1.55;
+      font-weight: 500;
     }
 
     /* RESPONSIVE */
@@ -387,6 +587,8 @@
       .nav-links { gap: 1rem; }
       .hero { padding: 60px 1.25rem 60px; }
       section { padding: 60px 1.25rem; }
+      .footer-inner { flex-direction: column; gap: 1.5rem; }
+      .writing-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -427,7 +629,7 @@
     </p>
 
     <div class="modules">
-      <div class="module-card">
+      <div class="module-card module-mr">
         <div class="module-icon">🔍</div>
         <div class="module-name">Machine Reasoning</div>
         <div class="module-desc">
@@ -442,7 +644,7 @@
         </div>
       </div>
 
-      <div class="module-card">
+      <div class="module-card module-rs">
         <div class="module-icon">⚙️</div>
         <div class="module-name">Reasoning Systems</div>
         <div class="module-desc">
@@ -456,7 +658,7 @@
         </div>
       </div>
 
-      <div class="module-card">
+      <div class="module-card module-cs">
         <div class="module-icon">🧠</div>
         <div class="module-name">Cognitive Systems</div>
         <div class="module-desc">
@@ -645,46 +847,66 @@
     <p class="section-body">
       Alongside the technical work, I write about AI concepts, book discussions, and ideas worth thinking through carefully.
     </p>
-    <div style="display:flex;flex-direction:column;gap:.75rem;margin-top:2rem">
+    <div class="writing-grid">
 
-      <div class="writing-note">
-        <strong>Project reflection</strong> — Why my genetic algorithm kept getting stuck — and what mutation rate actually does.
+      <div class="writing-card">
+        <span class="writing-badge">Draft</span>
+        <div class="writing-cat">Project reflection</div>
+        <div class="writing-headline">Why my genetic algorithm kept getting stuck — and what mutation rate actually does.</div>
       </div>
 
-      <div class="writing-note">
-        <strong>Project reflection</strong> — What surprised me when I compared IMDB, GPT-2, and Word2Vec on the same words.
+      <div class="writing-card">
+        <span class="writing-badge">Draft</span>
+        <div class="writing-cat">Project reflection</div>
+        <div class="writing-headline">What surprised me when I compared IMDB, GPT-2, and Word2Vec on the same words.</div>
       </div>
 
-      <div class="writing-note">
-        <strong>Project reflection</strong> — The difference between what the decision tree learned and what I expected it to learn.
+      <div class="writing-card">
+        <span class="writing-badge">Draft</span>
+        <div class="writing-cat">Project reflection</div>
+        <div class="writing-headline">The difference between what the decision tree learned and what I expected it to learn.</div>
       </div>
 
-      <div class="writing-note">
-        <strong>IRS → PRS</strong> — From classification to pattern recognition — where the IRS curriculum ends and PRS begins.
+      <div class="writing-card">
+        <span class="writing-badge">Draft</span>
+        <div class="writing-cat">IRS → PRS</div>
+        <div class="writing-headline">From classification to pattern recognition — where the IRS curriculum ends and PRS begins.</div>
       </div>
 
-      <div class="writing-note">
-        <strong>IRS → PRS</strong> — Embeddings as feature representations — the link between cognitive systems and PRS.
+      <div class="writing-card">
+        <span class="writing-badge">Draft</span>
+        <div class="writing-cat">IRS → PRS</div>
+        <div class="writing-headline">Embeddings as feature representations — the link between cognitive systems and PRS.</div>
       </div>
 
-      <div class="writing-note">
-        <strong>Book discussion</strong> — <em>The Master Algorithm</em> by Pedro Domingos.
+      <div class="writing-card">
+        <span class="writing-badge">Draft</span>
+        <div class="writing-cat">Book discussion</div>
+        <div class="writing-headline"><em>The Master Algorithm</em> — Pedro Domingos</div>
       </div>
 
-      <div class="writing-note">
-        <strong>Book discussion</strong> — <em>Pattern Recognition and Machine Learning</em> by Bishop.
+      <div class="writing-card">
+        <span class="writing-badge">Draft</span>
+        <div class="writing-cat">Book discussion</div>
+        <div class="writing-headline"><em>Pattern Recognition and Machine Learning</em> — Bishop</div>
       </div>
 
-      <div class="writing-note">
-        <strong>Book discussion</strong> — <em>Thinking, Fast and Slow</em> by Kahneman — and what it means for cognitive systems.
+      <div class="writing-card">
+        <span class="writing-badge">Draft</span>
+        <div class="writing-cat">Book discussion</div>
+        <div class="writing-headline"><em>Thinking, Fast and Slow</em> — Kahneman, and what it means for cognitive systems.</div>
       </div>
 
-      <div class="writing-note">
-        <strong>Applied</strong> — Things I've noticed as an AI Engineer that coursework didn't prepare me for.
+      <div class="writing-card">
+        <span class="writing-badge">Draft</span>
+        <div class="writing-cat">Applied</div>
+        <div class="writing-headline">Things I've noticed as an AI Engineer that coursework didn't prepare me for.</div>
       </div>
 
-      <div class="writing-note">
-        <strong>First post</strong> — What building a TSP solver taught me about how genetic algorithms actually converge.
+      <div class="writing-card">
+        <span class="writing-badge">Draft</span>
+        <div class="writing-cat">First post</div>
+        <div class="writing-headline">What building a TSP solver taught me about how genetic algorithms actually converge.</div>
       </div>
 
     </div>
@@ -701,7 +923,20 @@
   </section>
 
   <footer>
-    Adhithi Muruganandam &mdash; NUS-ISS · Graduate Certificate in Intelligent Reasoning Systems
+    <div class="footer-inner">
+      <div class="footer-left">
+        <div class="footer-name">Adhithi Muruganandam</div>
+        <div class="footer-role">Associate AI Engineer · Brightstar Enterprise Solutions, Singapore</div>
+        <div class="footer-cert">NUS-ISS · Graduate Certificate in Intelligent Reasoning Systems</div>
+      </div>
+      <div class="footer-links">
+        <a href="https://github.com/datakeep64" target="_blank">GitHub</a>
+        <a href="#projects">Projects</a>
+        <a href="#writing">Writing</a>
+        <a href="#foundation">Background</a>
+      </div>
+    </div>
+    <div class="footer-copy">Built with HTML, CSS &amp; vanilla JS &mdash; hosted on GitHub Pages</div>
   </footer>
 
 </body>
