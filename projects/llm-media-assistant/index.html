@@ -82,7 +82,7 @@
   <hr class="divider"/>
 
   <h2>Capabilities</h2>
-  <p>Six distinct tasks, each shaping model output — or guarding it — for a specific media use case.</p>
+  <p>Seven distinct tasks, each shaping model output — or guarding it — for a specific media use case.</p>
 
   <div class="capability-grid">
     <div class="cap-card">
@@ -99,6 +99,11 @@
       <div class="cap-icon">🔍</div>
       <h3>Quote Integrity</h3>
       <p>Checks that every direct quotation survived the transform byte-for-byte — flagging Preserved / Altered / Fabricated quotes with a word-level diff. Deliberately deterministic (exact + fuzzy string matching, no LLM), since verbatim-ness is a string property, not a probabilistic judgment.</p>
+    </div>
+    <div class="cap-card">
+      <div class="cap-icon">⚖️</div>
+      <h3>Neutrality Analysis</h3>
+      <p>Flags loaded language — editorializing verbs, emotive framing, intensifiers, weasel attribution, agency-hiding passive — against a curated lexicon, with an objectivity score 0–100 and an optional LLM rewrite that's re-scored to show the gain. Transparent by design: every deduction traces to a specific word.</p>
     </div>
     <div class="cap-card">
       <div class="cap-icon">📊</div>
@@ -170,8 +175,9 @@
     <div class="progress-item"><span class="check done">✓</span> One-shot headline rewriting</div>
     <div class="progress-item"><span class="check done">✓</span> Content restructuring with streamed output</div>
     <div class="progress-item"><span class="check done">✓</span> Quote-integrity guard (deterministic, unit-tested)</div>
+    <div class="progress-item"><span class="check done">✓</span> Neutrality / loaded-language analysis + neutral rewrite</div>
     <div class="progress-item"><span class="check done">✓</span> Streamlit UI unifying all tasks + token usage tracking</div>
-    <div class="progress-item"><span class="check todo">·</span> Neutrality / loaded-language analysis</div>
+    <div class="progress-item"><span class="check done">✓</span> Unit test suite (25 tests, offline)</div>
     <div class="progress-item"><span class="check todo">·</span> Batch processing for multiple articles</div>
   </div>
 
