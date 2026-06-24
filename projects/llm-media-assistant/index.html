@@ -82,7 +82,7 @@
   <hr class="divider"/>
 
   <h2>Capabilities</h2>
-  <p>Five distinct tasks, each using structured prompts to shape model output for a specific media use case.</p>
+  <p>Six distinct tasks, each shaping model output — or guarding it — for a specific media use case.</p>
 
   <div class="capability-grid">
     <div class="cap-card">
@@ -94,6 +94,11 @@
       <div class="cap-icon">✅</div>
       <h3>Groundedness Verification</h3>
       <p>Fact-checks a summary against its source using atomic-claim decomposition and textual entailment (the FActScore / SummaC approach). Flags hallucinations down to the individual claim, cites a verbatim supporting span for each verdict, and scores overall groundedness 0–100.</p>
+    </div>
+    <div class="cap-card">
+      <div class="cap-icon">🔍</div>
+      <h3>Quote Integrity</h3>
+      <p>Checks that every direct quotation survived the transform byte-for-byte — flagging Preserved / Altered / Fabricated quotes with a word-level diff. Deliberately deterministic (exact + fuzzy string matching, no LLM), since verbatim-ness is a string property, not a probabilistic judgment.</p>
     </div>
     <div class="cap-card">
       <div class="cap-icon">📊</div>
@@ -164,8 +169,9 @@
     <div class="progress-item"><span class="check done">✓</span> Chain-of-thought sentiment analysis</div>
     <div class="progress-item"><span class="check done">✓</span> One-shot headline rewriting</div>
     <div class="progress-item"><span class="check done">✓</span> Content restructuring with streamed output</div>
+    <div class="progress-item"><span class="check done">✓</span> Quote-integrity guard (deterministic, unit-tested)</div>
     <div class="progress-item"><span class="check done">✓</span> Streamlit UI unifying all tasks + token usage tracking</div>
-    <div class="progress-item"><span class="check todo">·</span> Quote-integrity guard (verbatim quote preservation)</div>
+    <div class="progress-item"><span class="check todo">·</span> Neutrality / loaded-language analysis</div>
     <div class="progress-item"><span class="check todo">·</span> Batch processing for multiple articles</div>
   </div>
 
