@@ -63,8 +63,9 @@
   <div class="status-badge"><span class="status-dot"></span> In Progress</div>
   <h1>ML Pipeline Automation System</h1>
   <p class="subtitle">
-    A reproducible, production-style machine learning workflow — covering data preprocessing, model training,
-    evaluation, and deployment — containerised with Docker and automated end-to-end via GitHub Actions CI/CD.
+    A reproducible, production-style ML workflow for news topic classification — TF-IDF feature extraction,
+    automated multi-model selection by 5-fold CV, evaluation with threshold gating, and a FastAPI
+    text-classification endpoint — containerised with Docker and automated via GitHub Actions CI/CD.
   </p>
 
   <div class="tags">
@@ -72,50 +73,51 @@
     <span class="tag">Docker</span>
     <span class="tag">GitHub Actions</span>
     <span class="tag">Scikit-learn</span>
+    <span class="tag">TF-IDF</span>
     <span class="tag">FastAPI</span>
-    <span class="tag">Pandas</span>
     <span class="tag">Pytest</span>
+    <span class="tag">20 Newsgroups</span>
   </div>
 
   <hr class="divider"/>
 
   <h2>Pipeline Stages</h2>
-  <p>A linear workflow designed for reproducibility — every run is deterministic, containerised, and logged.</p>
+  <p>A linear workflow designed for reproducibility — every run is deterministic, containerised, and logged. Each stage writes named artifacts so any step can be re-run independently.</p>
 
   <div class="pipeline">
     <div class="pipeline-step">
       <span class="step-num">01</span>
       <div class="step-content">
         <h3>Data Preprocessing</h3>
-        <p>Ingests raw datasets, handles missing values, encodes categoricals, scales numerical features. Outputs a versioned, cleaned dataset artifact.</p>
+        <p>Fetches 20 Newsgroups articles for 4 topic categories (Space, Sports, Politics, Technology). Strips email headers, footers, and quoted replies so the model learns from article body text rather than metadata. Fits a TF-IDF vectoriser (2,000 terms, sublinear TF) on training articles and saves the vectoriser, label map, and vocabulary as versioned artifacts.</p>
       </div>
     </div>
     <div class="pipeline-step">
       <span class="step-num">02</span>
       <div class="step-content">
-        <h3>Model Training</h3>
-        <p>Trains a Scikit-learn classifier with configurable hyperparameters. Training script reads from the preprocessed artifact, logs parameters and run metadata.</p>
+        <h3>Multi-Model Selection</h3>
+        <p>Three candidates are evaluated by 5-fold cross-validated macro-OVR AUC: <strong>LogisticRegression</strong> (strong linear TF-IDF baseline), <strong>RandomForest</strong> (non-linear ensemble), and <strong>SGDClassifier</strong> (online SGD — O(n) training time, designed for when the corpus grows to millions of articles). The best model is auto-selected and saved without manual intervention.</p>
       </div>
     </div>
     <div class="pipeline-step">
       <span class="step-num">03</span>
       <div class="step-content">
-        <h3>Evaluation</h3>
-        <p>Runs on held-out test split. Reports AUC, F1, precision, recall. Fails the CI run automatically if a threshold metric is not met.</p>
+        <h3>Evaluation with Threshold Gate</h3>
+        <p>Computes macro-OVR AUC, macro F1, per-class precision/recall, and confusion matrix on the held-out test split. Runs permutation importance across all 2,000 TF-IDF features — model-agnostic, so it works equally for RF, LR, and SGD. Fails the CI run automatically if AUC drops below 0.92.</p>
       </div>
     </div>
     <div class="pipeline-step">
       <span class="step-num">04</span>
       <div class="step-content">
-        <h3>Model Packaging</h3>
-        <p>Serialises the trained model and wraps it in a FastAPI inference endpoint. Packaged into a Docker image ready for deployment.</p>
+        <h3>FastAPI Inference Endpoint</h3>
+        <p>Accepts raw article text, vectorises via the saved TF-IDF vocabulary, and returns the predicted topic with per-class probability scores. A <code>/explain</code> endpoint exposes the model comparison and top-10 permutation-important terms for auditability.</p>
       </div>
     </div>
     <div class="pipeline-step">
       <span class="step-num">05</span>
       <div class="step-content">
         <h3>CI/CD via GitHub Actions</h3>
-        <p>On every push: installs dependencies, runs tests, executes the full pipeline, builds Docker image. Simulates a production deployment gate.</p>
+        <p>On every push: installs dependencies, runs the 9-test Pytest suite, executes the full preprocess → train → evaluate pipeline, and builds the Docker image. Acts as a regression gate — a drop in model quality fails the build before it can reach production.</p>
       </div>
     </div>
   </div>
@@ -130,13 +132,13 @@
       <span class="ci-arrow">→</span>
       <span class="ci-stage">install deps</span>
       <span class="ci-arrow">→</span>
-      <span class="ci-stage">lint + test</span>
+      <span class="ci-stage">pytest (9 tests)</span>
       <span class="ci-arrow">→</span>
       <span class="ci-stage">preprocess</span>
       <span class="ci-arrow">→</span>
-      <span class="ci-stage">train</span>
+      <span class="ci-stage">train (CV select)</span>
       <span class="ci-arrow">→</span>
-      <span class="ci-stage">evaluate</span>
+      <span class="ci-stage">evaluate (AUC gate)</span>
       <span class="ci-arrow">→</span>
       <span class="ci-stage">docker build</span>
     </div>
@@ -155,20 +157,20 @@
       <div class="value">GitHub Actions</div>
     </div>
     <div class="tech-card">
-      <div class="label">ML</div>
-      <div class="value">Scikit-learn</div>
+      <div class="label">ML / NLP</div>
+      <div class="value">Scikit-learn, TF-IDF</div>
+    </div>
+    <div class="tech-card">
+      <div class="label">Models</div>
+      <div class="value">LR / RF / SGD (auto-select)</div>
     </div>
     <div class="tech-card">
       <div class="label">API</div>
-      <div class="value">FastAPI</div>
+      <div class="value">FastAPI, Pydantic</div>
     </div>
     <div class="tech-card">
       <div class="label">Testing</div>
-      <div class="value">Pytest</div>
-    </div>
-    <div class="tech-card">
-      <div class="label">Data</div>
-      <div class="value">Pandas, NumPy</div>
+      <div class="value">Pytest (9 tests)</div>
     </div>
   </div>
 
@@ -176,13 +178,14 @@
 
   <h2>Build Status</h2>
   <div class="progress-block">
-    <div class="progress-item"><span class="check done">✓</span> Data preprocessing script</div>
-    <div class="progress-item"><span class="check done">✓</span> Model training (RandomForest, Breast Cancer dataset)</div>
-    <div class="progress-item"><span class="check done">✓</span> Evaluation with AUC threshold gating</div>
-    <div class="progress-item"><span class="check done">✓</span> FastAPI inference endpoint</div>
+    <div class="progress-item"><span class="check done">✓</span> 20 Newsgroups preprocessing + TF-IDF vectorisation (2,000 features)</div>
+    <div class="progress-item"><span class="check done">✓</span> Multi-model CV selection (LogisticRegression / RandomForest / SGDClassifier)</div>
+    <div class="progress-item"><span class="check done">✓</span> Evaluation with macro-OVR AUC threshold gate (≥ 0.92)</div>
+    <div class="progress-item"><span class="check done">✓</span> Permutation importance (model-agnostic, all 2,000 TF-IDF features)</div>
+    <div class="progress-item"><span class="check done">✓</span> FastAPI /predict (text → topic) + /explain (top terms + model comparison)</div>
     <div class="progress-item"><span class="check done">✓</span> Dockerfile</div>
     <div class="progress-item"><span class="check done">✓</span> GitHub Actions CI/CD workflow</div>
-    <div class="progress-item"><span class="check done">✓</span> Pytest test suite</div>
+    <div class="progress-item"><span class="check done">✓</span> Pytest suite (9 tests: data, vectorisation, integration)</div>
   </div>
 
   <hr class="divider"/>
