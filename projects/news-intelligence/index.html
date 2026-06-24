@@ -58,32 +58,32 @@
   <div class="status-badge"><span class="status-dot"></span> In Progress</div>
   <h1>News Intelligence System</h1>
   <p class="subtitle">
-    An end-to-end pipeline for processing news content — from raw article collection through to
-    semantic search and retrieval. Integrates NLP and information retrieval techniques into a unified system.
+    An end-to-end pipeline for processing news content — from multi-outlet RSS collection through
+    classification, named-entity extraction, deduplication, vector search, and cross-source event
+    clustering that groups one story across outlets and flags where their coverage diverges in tone.
   </p>
 
   <div class="tags">
     <span class="tag">Python</span>
-    <span class="tag">BeautifulSoup</span>
+    <span class="tag">feedparser (RSS)</span>
     <span class="tag">spaCy</span>
-    <span class="tag">NLTK</span>
+    <span class="tag">NLTK / VADER</span>
     <span class="tag">Scikit-learn</span>
-    <span class="tag">Sentence Transformers</span>
-    <span class="tag">Pandas</span>
-    <span class="tag">FAISS</span>
+    <span class="tag">TF-IDF</span>
+    <span class="tag">Agglomerative Clustering</span>
   </div>
 
   <hr class="divider"/>
 
   <h2>Pipeline Architecture</h2>
-  <p>Five sequential stages, each feeding into the next — designed so any stage can be swapped or extended independently.</p>
+  <p>Six stages, each feeding into the next — designed so any stage can be swapped or extended independently.</p>
 
   <div class="pipeline">
     <div class="pipeline-step">
       <span class="step-num">01</span>
       <div class="step-content">
         <h3>Data Collection</h3>
-        <p>Web scraping with BeautifulSoup targeting news sources. Structured extraction of headline, body, source, and publish date.</p>
+        <p>RSS collection with feedparser across multiple outlets (BBC, The Guardian, Sky News, NPR). Structured extraction of headline, summary, source, link, and publish date; failed feeds are skipped gracefully.</p>
       </div>
     </div>
     <div class="pipeline-step">
@@ -110,8 +110,15 @@
     <div class="pipeline-step">
       <span class="step-num">05</span>
       <div class="step-content">
-        <h3>Embedding-Based Search</h3>
-        <p>Sentence Transformers encode articles into dense vectors. FAISS index enables semantic similarity search — retrieving relevant articles by meaning, not just keyword match.</p>
+        <h3>Vector Search</h3>
+        <p>Unigram + bigram TF-IDF vectors with cosine similarity retrieval, so phrase-level queries ("interest rates", "climate change") rank by relevance across all fetched articles.</p>
+      </div>
+    </div>
+    <div class="pipeline-step">
+      <span class="step-num">06</span>
+      <div class="step-content">
+        <h3>Cross-Source Event Clustering</h3>
+        <p>Agglomerative clustering on TF-IDF cosine distance groups articles by underlying event — the event count is discovered from the data, not fixed in advance. Each event surfaces the outlets covering it, the terms they share, and a VADER-based <em>tone-divergence</em> flag when outlets cover the same story with notably different sentiment. (Named tone divergence, not "contradiction" — sentiment spread isn't claim-level entailment.)</p>
       </div>
     </div>
   </div>
@@ -150,12 +157,15 @@
 
   <h2>Build Status</h2>
   <div class="progress-block">
-    <div class="progress-item"><span class="check done">✓</span> RSS collection (BBC feeds)</div>
+    <div class="progress-item"><span class="check done">✓</span> Multi-outlet RSS collection (BBC, Guardian, Sky, NPR)</div>
     <div class="progress-item"><span class="check done">✓</span> Text preprocessing (NLTK tokenise, stopwords, lemmatise)</div>
     <div class="progress-item"><span class="check done">✓</span> Topic classification (keyword-weighted TF-IDF)</div>
-    <div class="progress-item"><span class="check done">✓</span> Extractive summarisation (TF-IDF sentence scoring)</div>
-    <div class="progress-item"><span class="check done">✓</span> TF-IDF cosine similarity search</div>
-    <div class="progress-item"><span class="check done">✓</span> Streamlit UI (Feed / Search / Analyse tabs)</div>
+    <div class="progress-item"><span class="check done">✓</span> Named-entity extraction + trending entities (spaCy)</div>
+    <div class="progress-item"><span class="check done">✓</span> Near-duplicate removal (title cosine similarity)</div>
+    <div class="progress-item"><span class="check done">✓</span> Extractive summarisation (position-weighted TF-IDF)</div>
+    <div class="progress-item"><span class="check done">✓</span> Unigram + bigram TF-IDF cosine search</div>
+    <div class="progress-item"><span class="check done">✓</span> Cross-source event clustering + tone divergence (unit-tested)</div>
+    <div class="progress-item"><span class="check done">✓</span> Streamlit UI (Feed / Events / Search / Analyse tabs)</div>
   </div>
 
   <hr class="divider"/>
