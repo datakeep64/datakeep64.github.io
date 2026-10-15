@@ -43,6 +43,44 @@
     .check.todo{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
     .back-link{display:inline-flex;align-items:center;gap:.4rem;font-size:.875rem;color:var(--muted);margin-bottom:2rem}
     .back-link:hover{color:var(--text);text-decoration:none}
+    /* Plain-English explainer + flowcharts */
+    h3.sub{font-size:.95rem;font-weight:600;margin:2rem 0 .5rem}
+    .flow{display:flex;flex-direction:column;align-items:stretch;gap:0;margin:1.25rem 0}
+    .flow-row{display:grid;gap:.6rem}
+    .flow-row.cols-2{grid-template-columns:repeat(2,1fr)}
+    .flow-row.cols-3{grid-template-columns:repeat(3,1fr)}
+    .node{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.8rem 1rem}
+    .node .nt{font-size:.88rem;font-weight:600;color:var(--text);margin-bottom:.2rem}
+    .node .nd{font-size:.8rem;color:var(--muted);line-height:1.55}
+    .node.src{border-color:rgba(88,166,255,.35)}
+    .node.nlp{border-color:rgba(210,168,255,.35)}
+    .node.out{border-color:rgba(63,185,80,.35)}
+    .node.warn{border-color:rgba(240,136,62,.4)}
+    .node.todo{border-style:dashed;background:transparent}
+    .node .kicker{font-family:'JetBrains Mono',monospace;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.3rem}
+    .node.src .kicker{color:var(--accent)}
+    .node.nlp .kicker{color:var(--purple)}
+    .node.out .kicker{color:var(--green)}
+    .node.warn .kicker{color:var(--orange)}
+    .node.todo .kicker{color:var(--muted)}
+    .arrow{text-align:center;color:var(--muted);font-size:1rem;line-height:1;padding:.35rem 0}
+    .group-label{font-size:.72rem;font-family:'JetBrains Mono',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.4rem;text-align:center}
+    .compare{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin:1rem 0}
+    .bars{margin:.5rem 0 0}
+    .bar-row{display:grid;grid-template-columns:7.5rem 1fr;align-items:center;gap:.6rem;font-size:.78rem;color:var(--muted);margin:.3rem 0;font-family:'JetBrains Mono',monospace}
+    .bar{height:8px;border-radius:4px;background:var(--accent)}
+    .callout{background:var(--surface2);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:.8rem 1rem;margin:1rem 0}
+    .callout p{margin:0;font-size:.88rem}
+    .legend{display:flex;flex-wrap:wrap;gap:1rem;font-size:.75rem;color:var(--muted);margin-top:.5rem}
+    .legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:.35rem;vertical-align:-1px;border:1px solid}
+    .legend .l-done::before{border-color:var(--green);background:rgba(63,185,80,.15)}
+    .legend .l-wip::before{border-color:var(--orange);background:rgba(240,136,62,.12)}
+    .legend .l-todo::before{border-color:var(--muted);border-style:dashed}
+    @media (max-width:600px){
+      .flow-row.cols-2,.flow-row.cols-3,.compare{grid-template-columns:1fr}
+      nav{padding:0 1rem}
+      main{padding:2rem 1rem}
+    }
   </style>
 </head>
 <body>
@@ -59,7 +97,7 @@
   <h1>News Intelligence System</h1>
   <p class="subtitle">
     An end-to-end pipeline for processing news content — from multi-outlet RSS collection through
-    classification, named-entity extraction, deduplication, vector search, and cross-source event
+    classification, named-entity extraction, deduplication, embedding-based search, and cross-source event
     clustering that groups one story across outlets and flags where their coverage diverges in tone.
   </p>
 
@@ -70,13 +108,192 @@
     <span class="tag">NLTK / VADER</span>
     <span class="tag">Scikit-learn</span>
     <span class="tag">TF-IDF</span>
+    <span class="tag">Sentence-Transformers</span>
     <span class="tag">Agglomerative Clustering</span>
   </div>
 
   <hr class="divider"/>
 
+  <h2>How It Works — in Plain English</h2>
+  <p>
+    Every day, hundreds of stories come in from different news outlets, and many of them cover the same events.
+    This system reads them automatically and answers four questions: <strong style="color:var(--text)">What is each story about?
+    Who is it about? Which stories are really the same event? And can I find a story by what it means, not just by the exact words it uses?</strong>
+  </p>
+
+  <h3 class="sub">1 · The journey of one article</h3>
+  <p>Each article goes through the same steps once. Every step adds something to the article, and nothing is thrown away.</p>
+
+  <div class="flow" aria-label="Flowchart: how an article moves through the system">
+    <div class="node src">
+      <div class="kicker">Collect</div>
+      <div class="nt">Read the news feeds</div>
+      <div class="nd">9 RSS feeds from BBC, The Guardian, Sky News and NPR. For each story we get the headline, a 1–3 sentence summary, the outlet, a link and a date. We don't get the full article text.</div>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="node nlp">
+      <div class="kicker">Clean</div>
+      <div class="nt">Tidy up the text</div>
+      <div class="nd">Strip HTML and links → split into words → drop filler words like “the” and “and” → reduce words to their base form (“markets” → “market”).</div>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="node nlp">
+      <div class="kicker">De-duplicate</div>
+      <div class="nt">Remove repeats</div>
+      <div class="nd">The same story often appears in two BBC sections. When two headlines are at least 82% similar, only one is kept.</div>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="group-label">Enrich: three labels added to every article</div>
+    <div class="flow-row cols-3">
+      <div class="node nlp">
+        <div class="kicker">Topic</div>
+        <div class="nd">Business, Politics, Sports… chosen by which topic's description the article is closest to.</div>
+      </div>
+      <div class="node nlp">
+        <div class="kicker">Names</div>
+        <div class="nd">People, places and organisations found with spaCy, e.g. “Bank of England”.</div>
+      </div>
+      <div class="node nlp">
+        <div class="kicker">Summary</div>
+        <div class="nd">The most informative sentences, with earlier sentences weighted higher (news puts the key facts first).</div>
+      </div>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="flow-row cols-2">
+      <div class="node out">
+        <div class="kicker">Events</div>
+        <div class="nt">Group the same story across outlets</div>
+        <div class="nd">Shows each distinct event, which outlets cover it and the words they share. It also flags events where outlets' <em>tone</em> differs a lot.</div>
+      </div>
+      <div class="node out">
+        <div class="kicker">Search</div>
+        <div class="nt">Find stories by meaning</div>
+        <div class="nd">Search uses both meaning and keywords. Results come back with the topic, names and summary attached.</div>
+      </div>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="node src">
+      <div class="kicker">App</div>
+      <div class="nt">Streamlit app with four tabs</div>
+      <div class="nd">Feed · Events · Search · Analyse (paste any text and find related coverage)</div>
+    </div>
+  </div>
+
+  <h3 class="sub">2 · Turning words into numbers</h3>
+  <p>
+    Computers can't read words directly, so every piece of text is first turned into a list of numbers.
+    The system does this in two ways.
+  </p>
+  <div class="compare">
+    <div class="node nlp">
+      <div class="kicker">TF-IDF</div>
+      <div class="nt">Word counts, weighted by how telling a word is</div>
+      <div class="nd">Common words that appear everywhere get almost no weight. Rare, specific words get a lot. Example weights:</div>
+      <div class="bars" aria-hidden="true">
+        <div class="bar-row"><span>“said”</span><div class="bar" style="width:8%"></div></div>
+        <div class="bar-row"><span>“bank”</span><div class="bar" style="width:45%"></div></div>
+        <div class="bar-row"><span>“inflation”</span><div class="bar" style="width:85%"></div></div>
+      </div>
+      <div class="nd" style="margin-top:.5rem">Used for: topics, summaries, duplicates, keyword search, events.</div>
+    </div>
+    <div class="node nlp">
+      <div class="kicker">Embeddings</div>
+      <div class="nt">A model's sense of what the text means</div>
+      <div class="nd">A small pretrained model (all-MiniLM-L6-v2) turns a whole sentence into 384 numbers. Sentences with similar meanings end up close together, even when they share no words.</div>
+      <div class="nd" style="margin-top:.5rem">Used for: meaning-based search.</div>
+    </div>
+  </div>
+  <div class="callout">
+    <p><strong style="color:var(--text)">Why not plain Bag of Words?</strong> Bag of Words only counts words. TF-IDF uses the same counts but also down-weights words that appear everywhere, so “said” doesn't drown out “inflation”. It also counts two-word phrases like “interest rates” as one unit.</p>
+  </div>
+
+  <h3 class="sub">3 · How search ranks results</h3>
+  <p>A keyword search for <em>“car makers”</em> misses an article about <em>“automotive manufacturers”</em> because they share no words. A meaning search finds it. The system combines both scores.</p>
+  <div class="flow" aria-label="Flowchart: how search scores and filters results">
+    <div class="node src">
+      <div class="kicker">Query</div>
+      <div class="nt">“rising borrowing costs”</div>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="flow-row cols-2">
+      <div class="node nlp">
+        <div class="kicker">Meaning score · 70%</div>
+        <div class="nd">How close the embeddings are. This finds stories that use different words for the same thing.</div>
+      </div>
+      <div class="node nlp">
+        <div class="kicker">Keyword score · 30%</div>
+        <div class="nd">TF-IDF match. This is precise on exact names and phrases.</div>
+      </div>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="node nlp">
+      <div class="kicker">Filter</div>
+      <div class="nt">Keep only the topics you asked for</div>
+      <div class="nd">e.g. “Business only”. The topic label comes from the classification step above.</div>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="node out">
+      <div class="kicker">Results</div>
+      <div class="nd">Each result shows both scores, plus the article's topic, names and summary. If the embedding model can't load (e.g. offline), search falls back to keywords only instead of failing.</div>
+    </div>
+  </div>
+
+  <h3 class="sub">4 · What “one unified pipeline” means</h3>
+  <p>
+    Before, “understanding” news (topics, names, summaries) and “finding” news (search) were separate tools that read the same feed.
+    Now they are one flow, and each side uses the other's output:
+  </p>
+  <div class="flow-row cols-2" style="margin:1rem 0">
+    <div class="node nlp">
+      <div class="kicker">Understanding → Finding</div>
+      <div class="nd">The search index is built from articles that already have topics, names and summaries, so you can filter search results by topic.</div>
+    </div>
+    <div class="node out">
+      <div class="kicker">Finding → Understanding</div>
+      <div class="nd">In the Analyse tab, you paste any text. The system labels it, then searches the feed for related coverage.</div>
+    </div>
+  </div>
+
+  <h3 class="sub">5 · What's done, and what still needs doing</h3>
+  <p>Not every part has been checked to the same standard. Here is exactly how far each part has been tested.</p>
+  <div class="legend">
+    <span class="l-done">Done &amp; tested</span>
+    <span class="l-wip">Works, but quality not yet measured</span>
+    <span class="l-todo">To do</span>
+  </div>
+  <div class="flow" aria-label="Status of each part of the system">
+    <div class="flow-row cols-2">
+      <div class="node out">
+        <div class="kicker">Done &amp; tested</div>
+        <div class="nd">Feed collection · cleaning · duplicate removal · meaning + keyword search (unit tests, including a real paraphrase test) · event clustering (9 unit tests) · end-to-end pipeline run</div>
+      </div>
+      <div class="node warn">
+        <div class="kicker">Works, not yet measured</div>
+        <div class="nd"><strong style="color:var(--text)">Topic labels</strong> aren't learned from data. They come from matching against hand-written word lists for 7 topics, checked on just 2 sample articles.<br/><strong style="color:var(--text)">Summaries:</strong> feed summaries are often only 1–3 sentences, too short to shorten, so they're usually shown as-is.</div>
+      </div>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="group-label">Next: measure how good the topic labels and summaries are</div>
+    <div class="node todo">
+      <div class="kicker">Step 1 · Get answers to check against</div>
+      <div class="nd">Hand-label 100–200 articles with the correct topic, or use a public labelled dataset (e.g. BBC News, AG News).</div>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="node todo">
+      <div class="kicker">Step 2 · Score the topic labels</div>
+      <div class="nd">Report accuracy, F1 for each topic, and a confusion matrix showing which topics get mixed up. Compare against a simple trained model.</div>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="node todo">
+      <div class="kicker">Step 3 · Score the summaries</div>
+      <div class="nd">Fetch full article text so there is something to summarise. Then compare the output with human-written summaries using ROUGE, and against the simple baseline of just taking the first two sentences.</div>
+    </div>
+  </div>
+
+  <hr class="divider"/>
+
   <h2>Pipeline Architecture</h2>
-  <p>Six stages, each feeding into the next — designed so any stage can be swapped or extended independently.</p>
+  <p>The same flow in technical terms. Each stage feeds the next, and any stage can be swapped or extended independently.</p>
 
   <div class="pipeline">
     <div class="pipeline-step">
@@ -90,28 +307,28 @@
       <span class="step-num">02</span>
       <div class="step-content">
         <h3>Text Preprocessing</h3>
-        <p>Cleaning pipeline using NLTK and spaCy — tokenisation, stopword removal, lemmatisation, and noise filtering for consistent input to downstream models.</p>
+        <p>NLTK cleaning pipeline: HTML/URL stripping, tokenisation, stopword and punctuation removal, and WordNet lemmatisation. Near-duplicate headlines (TF-IDF cosine ≥ 0.82) are then removed. spaCy is used separately for named-entity extraction.</p>
       </div>
     </div>
     <div class="pipeline-step">
       <span class="step-num">03</span>
       <div class="step-content">
         <h3>Topic Classification</h3>
-        <p>Multi-class classifier trained on preprocessed article text. Labels articles by topic category using TF-IDF features and a Scikit-learn classifier.</p>
+        <p>Unsupervised seed-similarity labelling: each article is vectorised with unigram + bigram TF-IDF and assigned the closest of seven hand-written topic descriptions by cosine similarity, or “General” if nothing overlaps. No training data yet, so accuracy has not been measured (see the evaluation plan above).</p>
       </div>
     </div>
     <div class="pipeline-step">
       <span class="step-num">04</span>
       <div class="step-content">
         <h3>Summarisation</h3>
-        <p>Extractive summarisation to distill key sentences from each article, reducing length while preserving the core information.</p>
+        <p>Extractive summarisation: sentences are scored by summed TF-IDF weight times a position decay (the inverted-pyramid structure of news), and the top sentences are kept in their original order.</p>
       </div>
     </div>
     <div class="pipeline-step">
       <span class="step-num">05</span>
       <div class="step-content">
-        <h3>Vector Search</h3>
-        <p>Unigram + bigram TF-IDF vectors with cosine similarity retrieval, so phrase-level queries ("interest rates", "climate change") rank by relevance across all fetched articles.</p>
+        <h3>Embedding-Based Hybrid Search</h3>
+        <p>Sentence-transformer embeddings (all-MiniLM-L6-v2) for semantic matching, blended 0.7 / 0.3 with unigram + bigram TF-IDF for exact-phrase precision. The index is built over the NLP-enriched records, so results can be filtered by classified topic. If the model is unavailable, search falls back to keyword mode.</p>
       </div>
     </div>
     <div class="pipeline-step">
@@ -137,15 +354,15 @@
     </div>
     <div class="tech-card">
       <div class="label">Classification</div>
-      <div class="value">Scikit-learn, TF-IDF</div>
+      <div class="value">TF-IDF seed similarity</div>
     </div>
     <div class="tech-card">
       <div class="label">Clustering</div>
       <div class="value">Agglomerative (cosine distance)</div>
     </div>
     <div class="tech-card">
-      <div class="label">Vector Search</div>
-      <div class="value">TF-IDF cosine similarity</div>
+      <div class="label">Search</div>
+      <div class="value">MiniLM embeddings + TF-IDF</div>
     </div>
     <div class="tech-card">
       <div class="label">UI</div>
@@ -159,13 +376,16 @@
   <div class="progress-block">
     <div class="progress-item"><span class="check done">✓</span> Multi-outlet RSS collection (BBC, Guardian, Sky, NPR)</div>
     <div class="progress-item"><span class="check done">✓</span> Text preprocessing (NLTK tokenise, stopwords, lemmatise)</div>
-    <div class="progress-item"><span class="check done">✓</span> Topic classification (keyword-weighted TF-IDF)</div>
+    <div class="progress-item"><span class="check wip">~</span> Topic classification (TF-IDF seed similarity), working, accuracy not yet measured</div>
     <div class="progress-item"><span class="check done">✓</span> Named-entity extraction + trending entities (spaCy)</div>
     <div class="progress-item"><span class="check done">✓</span> Near-duplicate removal (title cosine similarity)</div>
-    <div class="progress-item"><span class="check done">✓</span> Extractive summarisation (position-weighted TF-IDF)</div>
-    <div class="progress-item"><span class="check done">✓</span> Unigram + bigram TF-IDF cosine search</div>
+    <div class="progress-item"><span class="check wip">~</span> Extractive summarisation (position-weighted TF-IDF), working, quality not yet measured</div>
+    <div class="progress-item"><span class="check done">✓</span> Embedding-based hybrid search (MiniLM + TF-IDF, unit-tested)</div>
+    <div class="progress-item"><span class="check done">✓</span> Unified NLP + retrieval pipeline runner (end-to-end test)</div>
     <div class="progress-item"><span class="check done">✓</span> Cross-source event clustering + tone divergence (unit-tested)</div>
     <div class="progress-item"><span class="check done">✓</span> Streamlit UI (Feed / Events / Search / Analyse tabs)</div>
+    <div class="progress-item"><span class="check todo">○</span> Classifier evaluation on labelled data (accuracy, per-topic F1, confusion matrix)</div>
+    <div class="progress-item"><span class="check todo">○</span> Full-article fetching + ROUGE evaluation of summaries vs. a lead-sentence baseline</div>
   </div>
 
   <hr class="divider"/>
