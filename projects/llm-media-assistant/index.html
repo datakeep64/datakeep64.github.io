@@ -49,6 +49,45 @@
     .check.todo{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
     .back-link{display:inline-flex;align-items:center;gap:.4rem;font-size:.875rem;color:var(--muted);margin-bottom:2rem}
     .back-link:hover{color:var(--text);text-decoration:none}
+    /* Plain-English explainer + flowcharts */
+    h3.sub{font-size:.95rem;font-weight:600;margin:2rem 0 .5rem}
+    .flow{display:flex;flex-direction:column;align-items:stretch;gap:0;margin:1.25rem 0}
+    .flow-row{display:grid;gap:.6rem}
+    .flow-row.cols-2{grid-template-columns:repeat(2,1fr)}
+    .flow-row.cols-3{grid-template-columns:repeat(3,1fr)}
+    .node{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.8rem 1rem}
+    .node .nt{font-size:.88rem;font-weight:600;color:var(--text);margin-bottom:.2rem}
+    .node .nd{font-size:.8rem;color:var(--muted);line-height:1.55}
+    .node.src{border-color:rgba(88,166,255,.35)}
+    .node.nlp{border-color:rgba(210,168,255,.35)}
+    .node.out{border-color:rgba(63,185,80,.35)}
+    .node.warn{border-color:rgba(240,136,62,.4)}
+    .node.todo{border-style:dashed;background:transparent}
+    .node .kicker{font-family:'JetBrains Mono',monospace;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.3rem}
+    .node.src .kicker{color:var(--accent)}
+    .node.nlp .kicker{color:var(--purple)}
+    .node.out .kicker{color:var(--green)}
+    .node.warn .kicker{color:var(--orange)}
+    .node.todo .kicker{color:var(--muted)}
+    .arrow{text-align:center;color:var(--muted);font-size:1rem;line-height:1;padding:.35rem 0}
+    .group-label{font-size:.72rem;font-family:'JetBrains Mono',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.4rem;text-align:center}
+    .compare{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin:1rem 0}
+    .bars{margin:.5rem 0 0}
+    .bar-row{display:grid;grid-template-columns:7.5rem 1fr;align-items:center;gap:.6rem;font-size:.78rem;color:var(--muted);margin:.3rem 0;font-family:'JetBrains Mono',monospace}
+    .bar{height:8px;border-radius:4px;background:var(--accent)}
+    .callout{background:var(--surface2);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:.8rem 1rem;margin:1rem 0}
+    .callout p{margin:0;font-size:.88rem}
+    .legend{display:flex;flex-wrap:wrap;gap:1rem;font-size:.75rem;color:var(--muted);margin-top:.5rem}
+    .legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:.35rem;vertical-align:-1px;border:1px solid}
+    .legend .l-done::before{border-color:var(--green);background:rgba(63,185,80,.15)}
+    .legend .l-wip::before{border-color:var(--orange);background:rgba(240,136,62,.12)}
+    .legend .l-todo::before{border-color:var(--muted);border-style:dashed}
+    @media (max-width:600px){
+      .flow-row.cols-2,.flow-row.cols-3,.compare{grid-template-columns:1fr}
+      nav{padding:0 1rem}
+      main{padding:2rem 1rem}
+    }
+    .dot-list{margin:.4rem 0 0 1.1rem;font-size:.8rem;color:var(--muted);line-height:1.6}
   </style>
 </head>
 <body>
@@ -75,8 +114,188 @@
     <span class="tag">OpenAI API</span>
     <span class="tag">Prompt Engineering</span>
     <span class="tag">Faithfulness / NLI</span>
+    <span class="tag">Output Validation</span>
     <span class="tag">NLP</span>
     <span class="tag">Streamlit</span>
+  </div>
+
+  <hr class="divider"/>
+
+  <h2>How It Works — in Plain English</h2>
+  <p>
+    Newsrooms want AI to help with routine writing jobs, like shortening an article, suggesting headlines or rewriting a story for a different reader.
+    Doing the job is the easy part. The hard part is <strong style="color:var(--text)">trusting the result</strong>: an AI can invent a fact, change a quote,
+    slip in loaded words, or give a different answer every time you ask.
+    This project does both halves: it gets an AI to do useful newsroom work, then checks that work before a person relies on it.
+  </p>
+
+  <h3 class="sub">1 · The journey of one article</h3>
+  <div class="flow" aria-label="Flowchart: how an article moves through the assistant">
+    <div class="node src">
+      <div class="kicker">Input</div>
+      <div class="nt">Paste an article</div>
+      <div class="nd">Any news text. You pick a task and an OpenAI model (gpt-4o-mini, gpt-4o or gpt-3.5-turbo).</div>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="group-label">Do the work: the AI writes or labels something</div>
+    <div class="flow-row cols-2">
+      <div class="node nlp">
+        <div class="kicker">Write</div>
+        <div class="nd">Summarise at three lengths · rewrite headlines in four styles · restructure for a new format or audience</div>
+      </div>
+      <div class="node nlp">
+        <div class="kicker">Label</div>
+        <div class="nd">Sentiment: Positive, Negative, Neutral or Mixed, with the evidence it's based on</div>
+      </div>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="group-label">Check the work before anyone trusts it</div>
+    <div class="flow-row cols-3">
+      <div class="node warn">
+        <div class="kicker">Facts</div>
+        <div class="nd">Does every statement in the output actually appear in the source article?</div>
+      </div>
+      <div class="node warn">
+        <div class="kicker">Quotes</div>
+        <div class="nd">Did every quotation survive word for word?</div>
+      </div>
+      <div class="node warn">
+        <div class="kicker">Neutrality</div>
+        <div class="nd">Did loaded words like “slammed” or “devastating” creep in?</div>
+      </div>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="node out">
+      <div class="kicker">Output</div>
+      <div class="nt">A result an editor can trust or fix</div>
+      <div class="nd">Each check points to the exact sentence, quote or word that failed, not just a single score, so a person can decide quickly.</div>
+    </div>
+  </div>
+
+  <h3 class="sub">2 · Techniques used to get good answers from the AI</h3>
+  <p>The way you ask an AI for something (the “prompt”) changes the answer a lot. Each task uses the technique that fits it best.</p>
+  <div class="flow-row cols-2" style="margin:1rem 0">
+    <div class="node nlp">
+      <div class="kicker">Give it a role and clear rules</div>
+      <div class="nd">e.g. “You are a professional news editor… do not add information that isn't in the source.” Each task has its own rules: summary lengths, restructure formats, audiences.</div>
+    </div>
+    <div class="node nlp">
+      <div class="kicker">Make it show its evidence first</div>
+      <div class="nd">For sentiment, the AI has to quote the words that signal the tone <em>before</em> it picks a label. Reasoning first, answer second (“chain of thought”) gives fewer snap judgements.</div>
+    </div>
+    <div class="node nlp">
+      <div class="kicker">Show one worked example</div>
+      <div class="nd">For headlines, the AI first sees one article with four ideal headlines (“one-shot” prompting). An example teaches the difference between the styles better than a description does.</div>
+    </div>
+    <div class="node nlp">
+      <div class="kicker">Set the creativity level per task</div>
+      <div class="nd">Fact-checking runs with no randomness at all. Sentiment uses very little, and headlines use more, because there you <em>want</em> variety.</div>
+    </div>
+    <div class="node nlp">
+      <div class="kicker">Ask for a fixed format</div>
+      <div class="nd">Sentiment, headlines and fact-checks come back as structured data (JSON) with named fields, not free text, so the app and other systems can use them directly.</div>
+    </div>
+    <div class="node nlp">
+      <div class="kicker">Stream long outputs</div>
+      <div class="nd">Summaries and restructures appear word by word as they're written, so you don't wait for the whole thing.</div>
+    </div>
+  </div>
+  <div class="callout">
+    <p><strong style="color:var(--text)">Knowing when <em>not</em> to use AI.</strong> Two of the checks use no AI at all. Whether a quote is word for word is a plain text comparison, and a rule-based check is exact, free and the same every time. The neutrality check uses a curated word list, so every point it deducts traces to a specific word an editor can see and overrule. The AI is used only to <em>suggest</em> a more neutral rewrite.</p>
+  </div>
+
+  <h3 class="sub">3 · Making the output consistent</h3>
+  <p>
+    Asking for a fixed format isn't enough. The AI can still answer “positive” instead of “Positive”, write a confidence as “85%” or 0.85,
+    leave out a headline, or give two identical headlines. And the same article can get “Neutral” one time and “Mixed” the next.
+    Before these tools feed into the <a href="../news-intelligence/">News Intelligence System</a>, every answer goes through a checking layer:
+  </p>
+  <div class="flow" aria-label="Flowchart: how each AI answer is validated and repaired">
+    <div class="node src">
+      <div class="kicker">AI answers</div>
+      <div class="nd">Same settings every time (a fixed random “seed”), so repeat runs are as similar as possible.</div>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="flow-row cols-2">
+      <div class="node out">
+        <div class="kicker">Small slip → fix it quietly</div>
+        <div class="nd">“positive” → Positive · “85%” or 0.85 → 85 · stray quote marks and full stops removed</div>
+      </div>
+      <div class="node warn">
+        <div class="kicker">Real error → ask the AI to fix it</div>
+        <div class="nd">Unknown label, missing field, “short” headline over 8 words, or duplicate headlines: the exact error is sent back once. If it's still wrong, the app shows an error instead of passing on bad data.</div>
+      </div>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="node out">
+      <div class="kicker">Extra guards</div>
+      <div class="nd">Key phrases the AI claims to quote are dropped if they don't actually appear in the article. Each label (Positive / Negative / Neutral / Mixed) now has a written definition, since “Neutral vs Mixed” was the most common flip.</div>
+    </div>
+  </div>
+
+  <h3 class="sub">4 · How it's evaluated</h3>
+  <p>There are two kinds of checking: checks that score <em>each output</em> while the app runs, and automated tests that make sure the <em>code</em> behaves correctly.</p>
+  <div class="flow-row cols-2" style="margin:1rem 0">
+    <div class="node out">
+      <div class="kicker">Groundedness score · 0–100</div>
+      <div class="nd">The output is split into small, single-fact statements. Each one is checked against the source and marked Supported, Partial or Unsupported, with the exact source sentence as proof. The score is the share supported (Partial counts half). This follows published fact-checking methods (FActScore, SummaC).</div>
+    </div>
+    <div class="node out">
+      <div class="kicker">Quote integrity</div>
+      <div class="nd">Every quote is marked Preserved, Altered (with a word-by-word comparison) or Fabricated, meaning there's no matching quote in the source.</div>
+    </div>
+    <div class="node out">
+      <div class="kicker">Objectivity score · 0–100</div>
+      <div class="nd">Points are deducted for each loaded word across six categories. A suggested rewrite is re-scored, so you can see whether it actually improved.</div>
+    </div>
+    <div class="node out">
+      <div class="kicker">Consistency · agreement rate</div>
+      <div class="nd">Optionally runs the sentiment analysis three times and reports how often the label matched (e.g. 3 of 3 = 100%).</div>
+    </div>
+  </div>
+  <div class="callout">
+    <p><strong style="color:var(--text)">Code tests: 42, all passing.</strong> They run without an API key or internet: the AI is replaced by a stand-in that gives pre-written answers, including deliberately broken ones. They cover the scoring maths, quote matching, the loaded-word list, and the fix-or-reject logic for bad AI answers.</p>
+  </div>
+
+  <h3 class="sub">5 · What's done, and what still needs doing</h3>
+  <p>The tools work and check every single output. What's missing is a <strong style="color:var(--text)">measurement across many articles</strong>, showing how accurate and consistent they are on average.</p>
+  <div class="legend">
+    <span class="l-done">Done &amp; tested</span>
+    <span class="l-wip">Works, but quality not yet measured</span>
+    <span class="l-todo">To do</span>
+  </div>
+  <div class="flow" aria-label="Status of each part of the assistant">
+    <div class="flow-row cols-2">
+      <div class="node out">
+        <div class="kicker">Done &amp; tested</div>
+        <div class="nd">Fact-checking score logic · quote checker · loaded-word checker · output validation and repair · consistency check (42 offline tests) · live Streamlit app</div>
+      </div>
+      <div class="node warn">
+        <div class="kicker">Works, not yet measured</div>
+        <div class="nd">The quality of summaries, sentiment labels, headlines and restructures has been reviewed by eye on sample articles, but not scored against a labelled set. The fact-checker is itself an AI, and its own accuracy hasn't been measured yet either.</div>
+      </div>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="group-label">Next: measure, then integrate</div>
+    <div class="node todo">
+      <div class="kicker">Step 1 · Build a test set</div>
+      <div class="nd">Gather 100–200 articles with known answers: a public sentiment-labelled news dataset, plus a few dozen summaries with deliberately planted errors (a wrong number, an altered quote) to see whether the checks catch them.</div>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="node todo">
+      <div class="kicker">Step 2 · Score it</div>
+      <div class="nd">Sentiment accuracy and which labels get confused · average groundedness of summaries · share of planted errors caught · agreement rate across repeat runs · compare models (gpt-4o-mini vs gpt-4o) on quality and cost per article.</div>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="node todo">
+      <div class="kicker">Step 3 · Refine prompts with the numbers</div>
+      <div class="nd">Change one prompt at a time and keep the change only if the scores improve, so prompt tuning is driven by measurement, not guesswork.</div>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="node todo">
+      <div class="kicker">Step 4 · Plug into the News Intelligence System</div>
+      <div class="nd">Process many articles at once (batch mode), and add AI summaries, headlines and checks to the articles the <a href="../news-intelligence/">News Intelligence System</a> collects, with costs tracked per article.</div>
+    </div>
   </div>
 
   <hr class="divider"/>
@@ -108,17 +327,17 @@
     <div class="cap-card">
       <div class="cap-icon">📊</div>
       <h3>Sentiment Analysis</h3>
-      <p>Chain-of-thought classification — the model cites evidence from the text before labelling tone, reducing inconsistent or hallucinated classifications.</p>
+      <p>Chain-of-thought classification — the model cites evidence from the text before labelling tone, against explicit label definitions. Output is schema-validated, key phrases are checked against the source, and an optional 3-run check reports label agreement.</p>
     </div>
     <div class="cap-card">
       <div class="cap-icon">✏️</div>
       <h3>Headline Rewriting</h3>
-      <p>Generates alternative headline variants — neutral, clickbait, SEO-optimised — from the same article body.</p>
+      <p>Generates four variants — neutral, SEO-optimised, explanatory, concise — using one-shot prompting. Each set is validated: all four present, distinct, concise ≤ 8 words; violations are sent back to the model for repair.</p>
     </div>
     <div class="cap-card">
       <div class="cap-icon">🔄</div>
       <h3>Content Restructuring</h3>
-      <p>Transforms article structure: converts inverted-pyramid format to narrative, or restructures for different audiences.</p>
+      <p>Transforms article structure — inverted pyramid → narrative, formal → plain English, news report → explainer, long-form → bullets — for general readers, experts, students or executives.</p>
     </div>
   </div>
 
@@ -137,7 +356,8 @@
         <div class="ex-text">
           Neutral: MAS tightens policy for third quarter in a row<br/>
           SEO: Singapore interest rates 2024: what the MAS decision means for you<br/>
-          Explanatory: Why Singapore keeps raising rates — and what comes next
+          Explanatory: Why Singapore keeps raising rates — and what comes next<br/>
+          Concise: MAS tightens again
         </div>
       </div>
     </div>
@@ -149,7 +369,7 @@
   <div class="tech-grid">
     <div class="tech-card">
       <div class="label">LLM</div>
-      <div class="value">OpenAI API (GPT-3.5 / GPT-4)</div>
+      <div class="value">OpenAI API (gpt-4o-mini / gpt-4o / gpt-3.5-turbo)</div>
     </div>
     <div class="tech-card">
       <div class="label">Interface</div>
@@ -157,11 +377,19 @@
     </div>
     <div class="tech-card">
       <div class="label">Prompt Layer</div>
-      <div class="value">Structured system + user prompts</div>
+      <div class="value">System prompts, one-shot, chain-of-thought, JSON mode</div>
     </div>
     <div class="tech-card">
       <div class="label">Language</div>
       <div class="value">Python</div>
+    </div>
+    <div class="tech-card">
+      <div class="label">Reliability</div>
+      <div class="value">Schema validation + self-repair, fixed seed</div>
+    </div>
+    <div class="tech-card">
+      <div class="label">Testing</div>
+      <div class="value">pytest, stubbed OpenAI client (offline)</div>
     </div>
   </div>
 
@@ -177,8 +405,11 @@
     <div class="progress-item"><span class="check done">✓</span> Quote-integrity guard (deterministic, unit-tested)</div>
     <div class="progress-item"><span class="check done">✓</span> Neutrality / loaded-language analysis + neutral rewrite</div>
     <div class="progress-item"><span class="check done">✓</span> Streamlit UI unifying all tasks + token usage tracking</div>
-    <div class="progress-item"><span class="check done">✓</span> Unit test suite (25 tests, offline)</div>
+    <div class="progress-item"><span class="check done">✓</span> Output-consistency layer (schema validation, self-repair, label agreement check)</div>
+    <div class="progress-item"><span class="check done">✓</span> Unit test suite (42 tests, offline)</div>
+    <div class="progress-item"><span class="check todo">·</span> Benchmark on a labelled test set (accuracy, groundedness, error catch-rate, model comparison)</div>
     <div class="progress-item"><span class="check todo">·</span> Batch processing for multiple articles</div>
+    <div class="progress-item"><span class="check todo">·</span> Integration into the News Intelligence System</div>
   </div>
 
   <hr class="divider"/>
