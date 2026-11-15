@@ -89,7 +89,7 @@
 <main>
   <a class="back-link" href="../../#applied">← Applied AI Projects</a>
 
-  <div class="status-badge"><span class="status-dot"></span> In Progress · two results in</div>
+  <div class="status-badge"><span class="status-dot"></span> In Progress · three results in</div>
   <h1>Wildlife Intelligence System</h1>
   <p class="subtitle">
     An AI system for the critically endangered Malayan tiger and the wildlife of Singapore and Peninsular Malaysia.
@@ -160,10 +160,10 @@
         <div class="nt">Tell people in their language</div>
         <div class="nd">Alerts are translated into Malay, Tamil and Chinese, and checked for the errors that matter: species names, place names, severity.</div>
       </div>
-      <div class="node wip">
+      <div class="node done">
         <div class="kicker">Recommend</div>
         <div class="nt">What should a visitor go and see?</div>
-        <div class="nd">A different recommender for each situation. A first-time visitor gets suggestions reasoned from the knowledge graph. An active observer gets suggestions learned from what others have seen.</div>
+        <div class="nd">The plan: knowledge-graph suggestions for first-time visitors, suggestions learned from other observers for active ones. <strong>Result:</strong> the simplest approach won (see below).</div>
       </div>
     </div>
   </div>
@@ -274,6 +274,43 @@
 
   <hr class="divider"/>
 
+  <h2>Third Result: What Should a Visitor Go and See?</h2>
+  <p>
+    My plan was a classic one: suggest species from the knowledge graph to <strong>new visitors</strong>, who have no history to learn from,
+    and use <strong>collaborative filtering</strong> (learning from what similar observers recorded) for active users. I tested it on
+    <strong>1,869 iNaturalist observers</strong>, held out by time. Each model was trained on records before 2026, then scored on
+    whether its top 10 suggestions included species the person went on to record for the first time in 2026.
+  </p>
+  <img src="comparison_by_segment.png" alt="Three dot plots of precision at 10, for new visitors, light users and active users. Popularity by country is highest for new visitors (0.134) and light users (0.129). For active users, collaborative filtering (0.118) and popularity (0.109) overlap. Knowledge-based models score about 0.05; content-based models score below 0.04 and cannot serve new visitors." style="width:100%;border-radius:10px;border:1px solid var(--border);margin:1rem 0"/>
+
+  <div class="finding">
+    <div class="fk">Surprise</div>
+    <div class="ft">The simplest model won</div>
+    <div class="fd">“Show the most-observed species in your country” beat every other approach for new and light users. For active users it
+    tied with collaborative filtering (0.109 vs 0.118, with overlapping uncertainty). The hybrid, chosen fairly on earlier data, picked
+    popularity for everyone. A hybrid that switches between models only helps if one of them overtakes the other for some users,
+    and here none did.</div>
+  </div>
+  <div class="finding">
+    <div class="fk">Knowledge vs learning</div>
+    <div class="ft">The knowledge graph explains, but it knows too little</div>
+    <div class="fd">The knowledge-based recommender scored about 0.055, less than half of popularity. Its 26 curated species cover only 14% of
+    what people actually went on to record. In return, every suggestion comes with a reason (“recorded in Singapore; lives in 4 habitat
+    types; Endangered”), and it points people to less obvious species.</div>
+  </div>
+  <div class="finding">
+    <div class="fk">Perception helps reasoning</div>
+    <div class="ft">The camera model made better “species like this one” suggestions</div>
+    <div class="fd">For suggestions based on species a person has already seen, BioCLIP, the vision model from the camera pipeline, beat
+    hand-built taxonomy features. Its understanding of species names was a better guide to which species go together.</div>
+  </div>
+  <img src="accuracy_vs_novelty.png" alt="Scatter of hit rate against novelty. Popularity models are top-left (high hit rate around 0.7 to 0.77, low novelty around 3 bits). Knowledge-based models are in the middle (about 0.4 hit rate, 5.5 to 6.5 bits). Content-based models are bottom-right (under 0.1 hit rate, 7.5 to 9 bits)." style="width:100%;border-radius:10px;border:1px solid var(--border);margin:1rem 0"/>
+  <p style="font-size:.85rem">No model wins on both accuracy and novelty. Popularity is right most often but suggests what everyone already sees.
+    The full protocol and limitations are in the
+    <a href="https://github.com/datakeep64/wildlife-intelligence-system/tree/main/src/reasoning/recsys" target="_blank">recommender write-up on GitHub</a>.</p>
+
+  <hr class="divider"/>
+
   <h2>What the Data Has Already Taught Me</h2>
   <p>
     Setting up the data exposed problems that the design has to handle. Each one is recorded and will be part of the write-up.
@@ -307,7 +344,7 @@
   <div class="finding">
     <div class="fk">Cold start</div>
     <div class="ft">Half the observers have recorded a single species</div>
-    <div class="fd">In 63,003 iNaturalist records (6,618 observers, 728 species), 47% of observers recorded just one species, and only 0.73% of observer–species pairs are filled. That is why the design switches between a knowledge-based and a collaborative recommender.</div>
+    <div class="fd">In 63,003 iNaturalist records (6,618 observers, 728 species), 47% of observers recorded just one species, and only 0.73% of observer–species pairs are filled. That's why I planned to switch between a knowledge-based and a collaborative recommender. The third result above tests whether that actually works.</div>
   </div>
 
   <hr class="divider"/>
@@ -334,7 +371,7 @@
     <div class="progress-item"><span class="check wip">~</span> NLLB-200 translation: module and test set built, first check run; full evaluation needs reference translations</div>
     <div class="progress-item"><span class="check done">✓</span> Experiment: zero-shot vs linear probe vs kNN on held-out camera locations, with confusion matrices, few-shot curve and ablations</div>
     <div class="progress-item"><span class="check done">✓</span> Rule-based alerts in SPARQL (17 rules, 15 scenario tests), plus replay of real camera predictions through the rules</div>
-    <div class="progress-item"><span class="check todo">○</span> Collaborative (ALS), content-based and hybrid recommenders, compared on precision@k / recall@k</div>
+    <div class="progress-item"><span class="check done">✓</span> Recommender comparison: popularity, knowledge-based, collaborative (ALS), content-based (taxonomy and BioCLIP) and a switching hybrid, on held-out 2026 observers</div>
     <div class="progress-item"><span class="check todo">○</span> Property graph + embedding KG link prediction (TransE vs another model)</div>
     <div class="progress-item"><span class="check todo">○</span> Integration loop and interactive demo</div>
   </div>
