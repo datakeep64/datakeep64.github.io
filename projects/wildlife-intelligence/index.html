@@ -89,7 +89,7 @@
 <main>
   <a class="back-link" href="../../#applied">← Applied AI Projects</a>
 
-  <div class="status-badge"><span class="status-dot"></span> In Progress · first results in</div>
+  <div class="status-badge"><span class="status-dot"></span> In Progress · two results in</div>
   <h1>Wildlife Intelligence System</h1>
   <p class="subtitle">
     An AI system for the critically endangered Malayan tiger and the wildlife of Singapore and Peninsular Malaysia.
@@ -142,15 +142,15 @@
     <div class="arrow">↓</div>
     <div class="group-label">Reasoning: sighting → decision</div>
     <div class="flow-row cols-2">
-      <div class="node wip">
+      <div class="node done">
         <div class="kicker">Knowledge graph</div>
         <div class="nt">What do we know about this species?</div>
         <div class="nd">An ontology of 26 taxa: their IUCN status, habitats, threats and protected areas, queried with SPARQL.</div>
       </div>
-      <div class="node todo">
+      <div class="node done">
         <div class="kicker">Rules</div>
         <div class="nt">Does it need an alert?</div>
-        <div class="nd">e.g. a critically endangered species <em>and</em> a person detected in the same zone → high-priority alert.</div>
+        <div class="nd">e.g. a critically endangered species <em>and</em> a person detected in the same zone → high-priority alert. Uncertain or implausible sightings go to a human first.</div>
       </div>
     </div>
     <div class="arrow">↓</div>
@@ -170,7 +170,7 @@
 
   <h3 class="sub">2 · Why three kinds of knowledge graph?</h3>
   <div class="flow-row cols-3" style="margin:1rem 0">
-    <div class="node wip">
+    <div class="node done">
       <div class="kicker">Ontology</div>
       <div class="nd">Curated facts with precise meaning (“Critically Endangered ranks above Endangered”). Rules need this precision.</div>
     </div>
@@ -223,6 +223,54 @@
   </div>
   <p style="font-size:.85rem">Full metrics, all four figures and the limitations are in the
     <a href="https://github.com/datakeep64/wildlife-intelligence-system/tree/main/src/perception/camera_trap" target="_blank">camera-trap write-up on GitHub</a>.</p>
+
+  <hr class="divider"/>
+
+  <h2>Second Result: From Sightings to Alerts</h2>
+  <p>
+    A sighting only matters if someone acts on it. The reasoning layer is a set of <strong>17 rules over the knowledge graph</strong>.
+    They decide whether a sighting needs an alert, how urgent it is, or whether a person should check it first. Every alert explains
+    which rule fired and why.
+  </p>
+  <div class="callout">
+    <p><strong>Knowledge filling a gap the camera can't.</strong> The camera only sees “tiger”. It can't tell a Malayan tiger
+    (Critically Endangered) from a Sumatran one. A rule supplies the answer: in Malaysia, the only tiger is the Malayan tiger.
+    In the other direction, a “tiger” seen in Singapore is flagged for review, because tigers aren't recorded there.</p>
+  </div>
+  <p>
+    To test the whole chain, I replayed the 334 held-out camera-trap photos through the rules, each followed by a person detected
+    an hour later. 38 of them are tigers and should become HIGH-priority alerts. The question is how often a wrong species
+    turns into a wrong alert.
+  </p>
+  <div class="stats">
+    <div class="stat"><div class="sv">12</div><div class="sl">false HIGH alerts from zero-shot species ID (5 were tapirs called tigers)</div></div>
+    <div class="stat"><div class="sv">0</div><div class="sl">false HIGH alerts from the trained classifier with human review</div></div>
+    <div class="stat"><div class="sv">6%</div><div class="sl">of sightings sent to a human to get there</div></div>
+    <div class="stat"><div class="sv">15</div><div class="sl">scenario tests; one caught a bug that had silently disabled two rules</div></div>
+  </div>
+  <img src="alert_tradeoff.png" alt="Line chart of false HIGH alerts against the share of sightings sent to human review. Zero-shot falls from 12 false alerts at 0% review to 3 at 17%. Logistic regression and kNN start at 2 and 1 and reach 0 at about 6 to 8% review." style="width:100%;border-radius:10px;border:1px solid var(--border);margin:1rem 0"/>
+
+  <div class="finding">
+    <div class="fk">Confidently wrong</div>
+    <div class="ft">A review threshold can't catch confident mistakes</div>
+    <div class="fd">Sending low-confidence sightings to a person barely helped zero-shot. 22% of its mistakes came with at least 90% confidence,
+    against 3% for the trained classifier. Even with 17% of sightings reviewed, zero-shot still raised 3 false HIGH alerts.</div>
+  </div>
+  <div class="finding">
+    <div class="fk">My own blind spot</div>
+    <div class="ft">A tiger read as a wild boar slipped through</div>
+    <div class="fd">I only sent uncertain predictions of <em>threatened</em> species to review. A tiger misread as a wild boar, at just 34%
+    confidence, passed silently, because wild boar isn't threatened. The next design change is to review when the runner-up species is threatened too.</div>
+  </div>
+  <div class="finding">
+    <div class="fk">Protecting the animals</div>
+    <div class="ft">The data an anti-poaching rule needs is hidden on purpose</div>
+    <div class="fd">Public records blur the location of threatened species, typically by about 31 km, so poachers can't use them. 79% of
+    Critically Endangered records are blurred, against 7% of common species. Only one Critically Endangered species could be placed in a
+    specific reserve, so the system has to rely on its own camera evidence.</div>
+  </div>
+  <p style="font-size:.85rem">Rules, tests and the full replay results are in the
+    <a href="https://github.com/datakeep64/wildlife-intelligence-system/tree/main/src/reasoning/kg" target="_blank">knowledge-graph write-up on GitHub</a>.</p>
 
   <hr class="divider"/>
 
@@ -285,7 +333,7 @@
     <div class="progress-item"><span class="check done">✓</span> Knowledge-based recommender with explanations + trail suggestions (unit-tested)</div>
     <div class="progress-item"><span class="check wip">~</span> NLLB-200 translation: module and test set built, first check run; full evaluation needs reference translations</div>
     <div class="progress-item"><span class="check done">✓</span> Experiment: zero-shot vs linear probe vs kNN on held-out camera locations, with confusion matrices, few-shot curve and ablations</div>
-    <div class="progress-item"><span class="check todo">○</span> Rule-based alerts in SPARQL</div>
+    <div class="progress-item"><span class="check done">✓</span> Rule-based alerts in SPARQL (17 rules, 15 scenario tests), plus replay of real camera predictions through the rules</div>
     <div class="progress-item"><span class="check todo">○</span> Collaborative (ALS), content-based and hybrid recommenders, compared on precision@k / recall@k</div>
     <div class="progress-item"><span class="check todo">○</span> Property graph + embedding KG link prediction (TransE vs another model)</div>
     <div class="progress-item"><span class="check todo">○</span> Integration loop and interactive demo</div>
