@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Wildlife Intelligence System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#0d1117;--surface:#161b22;--surface2:#1c2128;--border:#30363d;--text:#e6edf3;--muted:#8b949e;--accent:#58a6ff;--green:#3fb950;--purple:#d2a8ff;--orange:#f0883e}
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.7}
+    a{color:var(--accent);text-decoration:none}
+    a:hover{text-decoration:underline}
+    strong{color:var(--text)}
+    nav{position:sticky;top:0;z-index:100;background:rgba(13,17,23,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:60px}
+    .nav-brand{font-size:.9rem;color:var(--muted)}
+    .nav-brand a{color:var(--muted)}
+    .nav-title{font-size:.9rem;font-weight:600}
+    main{max-width:860px;margin:0 auto;padding:3rem 1.5rem}
+    .status-badge{display:inline-flex;align-items:center;gap:.4rem;font-size:.75rem;font-family:'JetBrains Mono',monospace;background:rgba(210,168,255,.1);color:var(--purple);border:1px solid rgba(210,168,255,.2);padding:.25rem .75rem;border-radius:20px;margin-bottom:1.5rem}
+    .status-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+    h1{font-size:clamp(1.6rem,4vw,2.4rem);font-weight:700;letter-spacing:-.025em;line-height:1.2;margin-bottom:.75rem}
+    .subtitle{color:var(--muted);font-size:1rem;margin-bottom:2.5rem;max-width:600px}
+    .tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:.72rem;background:rgba(88,166,255,.1);color:var(--accent);border:1px solid rgba(88,166,255,.2);padding:.2rem .55rem;border-radius:4px;margin:.2rem .2rem 0 0}
+    .tags{margin-bottom:2.5rem}
+    .divider{border:none;border-top:1px solid var(--border);margin:2.5rem 0}
+    h2{font-size:1.15rem;font-weight:600;margin-bottom:1rem;letter-spacing:-.01em}
+    p{color:var(--muted);font-size:.95rem;margin-bottom:1rem}
+    h3.sub{font-size:.95rem;font-weight:600;margin:2rem 0 .5rem}
+    .flow{display:flex;flex-direction:column;align-items:stretch;gap:0;margin:1.25rem 0}
+    .flow-row{display:grid;gap:.6rem}
+    .flow-row.cols-2{grid-template-columns:repeat(2,1fr)}
+    .flow-row.cols-3{grid-template-columns:repeat(3,1fr)}
+    .node{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.8rem 1rem}
+    .node .nt{font-size:.88rem;font-weight:600;color:var(--text);margin-bottom:.2rem}
+    .node .nd{font-size:.8rem;color:var(--muted);line-height:1.55}
+    .node.done{border-color:rgba(63,185,80,.35)}
+    .node.wip{border-color:rgba(240,136,62,.4)}
+    .node.todo{border-style:dashed;background:transparent}
+    .node .kicker{font-family:'JetBrains Mono',monospace;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.3rem}
+    .node.done .kicker{color:var(--green)}
+    .node.wip .kicker{color:var(--orange)}
+    .node.todo .kicker{color:var(--muted)}
+    .arrow{text-align:center;color:var(--muted);font-size:1rem;line-height:1;padding:.35rem 0}
+    .group-label{font-size:.72rem;font-family:'JetBrains Mono',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin:.6rem 0 .4rem;text-align:center}
+    .legend{display:flex;flex-wrap:wrap;gap:1rem;font-size:.75rem;color:var(--muted);margin-top:.5rem}
+    .legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:.35rem;vertical-align:-1px;border:1px solid}
+    .legend .l-done::before{border-color:var(--green);background:rgba(63,185,80,.15)}
+    .legend .l-wip::before{border-color:var(--orange);background:rgba(240,136,62,.12)}
+    .legend .l-todo::before{border-color:var(--muted);border-style:dashed}
+    .callout{background:var(--surface2);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:.8rem 1rem;margin:1rem 0}
+    .callout p{margin:0;font-size:.88rem}
+    .finding{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--orange);border-radius:0 10px 10px 0;padding:.9rem 1.1rem;margin:.75rem 0}
+    .finding .ft{font-size:.9rem;font-weight:600;color:var(--text);margin-bottom:.25rem}
+    .finding .fd{font-size:.83rem;color:var(--muted);line-height:1.6}
+    .finding .fk{font-family:'JetBrains Mono',monospace;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--orange);margin-bottom:.3rem}
+    .stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:.75rem;margin:1rem 0}
+    .stat{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.9rem 1rem}
+    .stat .sv{font-size:1.3rem;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums}
+    .stat .sl{font-size:.75rem;color:var(--muted);line-height:1.45}
+    .tech-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.75rem;margin-top:1rem}
+    .tech-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.9rem 1rem}
+    .tech-card .label{font-size:.72rem;font-family:'JetBrains Mono',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.4rem}
+    .tech-card .value{font-size:.875rem;color:var(--text);font-weight:500}
+    .progress-block{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.25rem;margin-top:1rem}
+    .progress-item{display:flex;align-items:center;gap:.75rem;padding:.5rem 0;border-bottom:1px solid var(--border);font-size:.875rem}
+    .progress-item:last-child{border-bottom:none}
+    .check{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.7rem}
+    .check.done{background:rgba(63,185,80,.15);color:var(--green);border:1px solid rgba(63,185,80,.3)}
+    .check.wip{background:rgba(240,136,62,.12);color:var(--orange);border:1px solid rgba(240,136,62,.25)}
+    .check.todo{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
+    .back-link{display:inline-flex;align-items:center;gap:.4rem;font-size:.875rem;color:var(--muted);margin-bottom:2rem}
+    .back-link:hover{color:var(--text);text-decoration:none}
+    .updated{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--muted);margin-top:-1.5rem;margin-bottom:2rem}
+    @media (max-width:600px){
+      .flow-row.cols-2,.flow-row.cols-3{grid-template-columns:1fr}
+      nav{padding:0 1rem}
+      main{padding:2rem 1rem}
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-brand"><a href="../../">Adhithi Muruganandam</a></span>
+  <span class="nav-title">Wildlife Intelligence System</span>
+</nav>
+
+<main>
+  <a class="back-link" href="../../#applied">← Applied AI Projects</a>
+
+  <div class="status-badge"><span class="status-dot"></span> In Progress · Phase A of 3 complete</div>
+  <h1>Wildlife Intelligence System</h1>
+  <p class="subtitle">
+    An AI system for the critically endangered Malayan tiger and the wildlife of Singapore and Peninsular Malaysia.
+    It turns raw camera-trap images into sightings, reasons over those sightings with knowledge graphs, and outputs
+    prioritised, multilingual alerts and trail suggestions.
+  </p>
+  <p class="updated">Status as of 15 Nov 2026</p>
+
+  <div class="tags">
+    <span class="tag">MegaDetector</span>
+    <span class="tag">BioCLIP</span>
+    <span class="tag">NLLB-200</span>
+    <span class="tag">RDF / OWL</span>
+    <span class="tag">SPARQL</span>
+    <span class="tag">PyKEEN</span>
+    <span class="tag">Implicit ALS</span>
+    <span class="tag">GBIF / iNaturalist</span>
+  </div>
+
+  <hr class="divider"/>
+
+  <h2>How It Works, in Plain English</h2>
+  <p>
+    Camera traps in the forest take far more photos than people can look through, and most frames are empty.
+    This system has two halves that feed each other. The <strong>perception</strong> half
+    (Pattern Recognition Systems) looks at each photo and asks: <em>is anything there, and what is it?</em>
+    The <strong>reasoning</strong> half (Intelligent Reasoning Systems) takes that answer and asks:
+    <em>does this matter, who should know, and what should a visitor go and see?</em>
+  </p>
+
+  <h3 class="sub">1 · The journey of one camera-trap photo</h3>
+  <div class="legend">
+    <span class="l-done">Built &amp; tested</span>
+    <span class="l-wip">Built, results not yet measured</span>
+    <span class="l-todo">To do</span>
+  </div>
+  <div class="flow" aria-label="Flowchart: how a camera-trap photo moves through the system">
+    <div class="group-label">Perception: photo → sighting</div>
+    <div class="node done">
+      <div class="kicker">Triage · MegaDetector</div>
+      <div class="nt">Is there an animal, a person, a vehicle, or nothing?</div>
+      <div class="nd">Empty frames are dropped. A person or vehicle in a protected forest is a possible poaching signal.</div>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="node wip">
+      <div class="kicker">Identify · BioCLIP</div>
+      <div class="nt">Which species is it?</div>
+      <div class="nd">The animal is cropped out and passed to BioCLIP, a model trained on images from across the tree of life. The experiment compares two approaches: asking the model directly with species names (zero-shot), and training a small classifier on its features with ~110 labelled photos per species.</div>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="group-label">Reasoning: sighting → decision</div>
+    <div class="flow-row cols-2">
+      <div class="node wip">
+        <div class="kicker">Knowledge graph</div>
+        <div class="nt">What do we know about this species?</div>
+        <div class="nd">An ontology of 26 taxa: their IUCN status, habitats, threats and protected areas, queried with SPARQL.</div>
+      </div>
+      <div class="node todo">
+        <div class="kicker">Rules</div>
+        <div class="nt">Does it need an alert?</div>
+        <div class="nd">e.g. a critically endangered species <em>and</em> a person detected in the same zone → high-priority alert.</div>
+      </div>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="flow-row cols-2">
+      <div class="node wip">
+        <div class="kicker">Translate · NLLB-200</div>
+        <div class="nt">Tell people in their language</div>
+        <div class="nd">Alerts are translated into Malay, Tamil and Chinese, and checked for the errors that matter: species names, place names, severity.</div>
+      </div>
+      <div class="node wip">
+        <div class="kicker">Recommend</div>
+        <div class="nt">What should a visitor go and see?</div>
+        <div class="nd">A different recommender for each situation. A first-time visitor gets suggestions reasoned from the knowledge graph. An active observer gets suggestions learned from what others have seen.</div>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="sub">2 · Why three kinds of knowledge graph?</h3>
+  <div class="flow-row cols-3" style="margin:1rem 0">
+    <div class="node wip">
+      <div class="kicker">Ontology</div>
+      <div class="nd">Curated facts with precise meaning (“Critically Endangered ranks above Endangered”). Rules need this precision.</div>
+    </div>
+    <div class="node todo">
+      <div class="kicker">Property graph</div>
+      <div class="nd">Messy, high-volume records of who saw what, where and when. Good for co-occurrence analysis.</div>
+    </div>
+    <div class="node todo">
+      <div class="kicker">Embedding KG</div>
+      <div class="nd">Predicts links nobody wrote down, such as a species–habitat pair that's missing from the curated facts. Extends my TransE assignment.</div>
+    </div>
+  </div>
+
+  <hr class="divider"/>
+
+  <h2>What the Data Has Already Taught Me</h2>
+  <p>
+    The models haven't been evaluated yet, but setting up the data already exposed problems the design has to handle.
+    Each one is recorded and will be part of the write-up.
+  </p>
+
+  <div class="finding">
+    <div class="fk">Knowledge</div>
+    <div class="ft">An automated lookup would downgrade the Malayan tiger</div>
+    <div class="fd">GBIF returns the IUCN status for the <em>species</em> tiger (Endangered) because it can't resolve the Malayan subspecies, which is Critically Endangered. Without a curated, cited correction, the main alert rule would miss the flagship animal.</div>
+  </div>
+  <div class="finding">
+    <div class="fk">Data gap</div>
+    <div class="ft">Public camera-trap data contains no people</div>
+    <div class="fd">LILA BC withholds images of humans for privacy: all 150 sampled human images were unavailable. So the anti-poaching signal can't be tested on camera-trap data, and it will be tested on other public images, with the domain gap stated.</div>
+  </div>
+  <div class="finding">
+    <div class="fk">Domain gap</div>
+    <div class="ft">The “tigers” are Sumatran, and most leopards are Kenyan</div>
+    <div class="fd">302 of 321 tiger images come from Indonesia, and 382 of 470 leopard images from Kenya. The second becomes a deliberate test: does an African savanna leopard look like a Lao forest leopard to the model?</div>
+  </div>
+  <div class="finding">
+    <div class="fk">Translation</div>
+    <div class="ft">Machine translation drops the urgent part of alerts</div>
+    <div class="fd">In a first check on 3 alerts, the Chinese output stopped at the first comma every time, dropping the endangered species and the instruction to rangers. In Tamil, “Malayan tiger” came back as “Malayalam tiger”. In Malay and Tamil, “critically endangered” was weakened to “endangered” or “dangerous”.</div>
+  </div>
+  <div class="finding">
+    <div class="fk">Curated vs measured</div>
+    <div class="ft">Occurrence records contradicted my own assumptions</div>
+    <div class="fd">I had marked sambar deer as absent from Singapore. GBIF holds 94 Singapore records since 2015. The fix is an explicit rule for when records override curated facts, not a quiet edit.</div>
+  </div>
+  <div class="finding">
+    <div class="fk">Cold start</div>
+    <div class="ft">Half the observers have recorded a single species</div>
+    <div class="fd">In 63,003 iNaturalist records (6,618 observers, 728 species), 47% of observers recorded just one species, and only 0.73% of observer–species pairs are filled. That is why the design switches between a knowledge-based and a collaborative recommender.</div>
+  </div>
+
+  <hr class="divider"/>
+
+  <h2>Data So Far</h2>
+  <div class="stats">
+    <div class="stat"><div class="sv">1,400</div><div class="sl">camera-trap images (LILA WCS), 9 species, split by camera location</div></div>
+    <div class="stat"><div class="sv">26</div><div class="sl">taxa in the ontology, with IUCN status, habitats and threats</div></div>
+    <div class="stat"><div class="sv">65,953</div><div class="sl">iNaturalist observer records, SG + Peninsular Malaysia</div></div>
+    <div class="stat"><div class="sv">20</div><div class="sl">test alerts for translation into Malay, Tamil and Chinese</div></div>
+  </div>
+  <div class="callout">
+    <p><strong>Why split by camera location?</strong> Photos from the same camera share a background. If the same camera appears in both training and test data, a model can score well by recognising the background instead of the animal. Keeping each camera on one side of the split prevents that.</p>
+  </div>
+
+  <hr class="divider"/>
+
+  <h2>Build Status</h2>
+  <div class="progress-block">
+    <div class="progress-item"><span class="check done">✓</span> Data pipelines: camera traps (LILA WCS), occurrences (GBIF / iNaturalist), IUCN status</div>
+    <div class="progress-item"><span class="check done">✓</span> Camera-trap pipeline end to end (MegaDetector → crop → BioCLIP), smoke-tested on real images</div>
+    <div class="progress-item"><span class="check done">✓</span> Ontology schema + 26-taxon seed, queryable with SPARQL (unit-tested)</div>
+    <div class="progress-item"><span class="check done">✓</span> Knowledge-based recommender with explanations + trail suggestions (unit-tested)</div>
+    <div class="progress-item"><span class="check wip">~</span> NLLB-200 translation: module and test set built, first check run; full evaluation needs reference translations</div>
+    <div class="progress-item"><span class="check todo">○</span> Experiment: zero-shot vs linear probe vs kNN, with confusion matrices and look-alike species</div>
+    <div class="progress-item"><span class="check todo">○</span> Rule-based alerts in SPARQL</div>
+    <div class="progress-item"><span class="check todo">○</span> Collaborative (ALS), content-based and hybrid recommenders, compared on precision@k / recall@k</div>
+    <div class="progress-item"><span class="check todo">○</span> Property graph + embedding KG link prediction (TransE vs another model)</div>
+    <div class="progress-item"><span class="check todo">○</span> Integration loop and interactive demo</div>
+  </div>
+
+  <hr class="divider"/>
+
+  <h2>Tech Stack</h2>
+  <div class="tech-grid">
+    <div class="tech-card"><div class="label">Detection</div><div class="value">MegaDetector v5a</div></div>
+    <div class="tech-card"><div class="label">Species ID</div><div class="value">BioCLIP + scikit-learn</div></div>
+    <div class="tech-card"><div class="label">Translation</div><div class="value">NLLB-200 (600M)</div></div>
+    <div class="tech-card"><div class="label">Knowledge graph</div><div class="value">rdflib, NetworkX, PyKEEN</div></div>
+    <div class="tech-card"><div class="label">Recommenders</div><div class="value">implicit (ALS)</div></div>
+    <div class="tech-card"><div class="label">Data</div><div class="value">LILA BC, GBIF, iNaturalist</div></div>
+  </div>
+
+  <hr class="divider"/>
+
+  <a href="https://github.com/datakeep64/wildlife-intelligence-system" target="_blank" class="btn" style="display:inline-flex;align-items:center;gap:.5rem;background:#58a6ff;color:#0d1117;padding:.6rem 1.4rem;border-radius:8px;font-size:.9rem;font-weight:500;text-decoration:none">
+    View on GitHub →
+  </a>
+</main>
+
+</body>
+</html>
