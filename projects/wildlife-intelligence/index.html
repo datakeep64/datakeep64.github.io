@@ -89,7 +89,7 @@
 <main>
   <a class="back-link" href="../../#applied">← Applied AI Projects</a>
 
-  <div class="status-badge"><span class="status-dot"></span> In Progress · Phase A of 3 complete</div>
+  <div class="status-badge"><span class="status-dot"></span> In Progress · first results in</div>
   <h1>Wildlife Intelligence System</h1>
   <p class="subtitle">
     An AI system for the critically endangered Malayan tiger and the wildlife of Singapore and Peninsular Malaysia.
@@ -131,13 +131,13 @@
     <div class="node done">
       <div class="kicker">Triage · MegaDetector</div>
       <div class="nt">Is there an animal, a person, a vehicle, or nothing?</div>
-      <div class="nd">Empty frames are dropped. A person or vehicle in a protected forest is a possible poaching signal.</div>
+      <div class="nd">Empty frames are dropped. A person or vehicle in a protected forest is a possible poaching signal. <strong>Result:</strong> it found the animal in 98% of 1,350 animal photos.</div>
     </div>
     <div class="arrow">↓</div>
-    <div class="node wip">
+    <div class="node done">
       <div class="kicker">Identify · BioCLIP</div>
       <div class="nt">Which species is it?</div>
-      <div class="nd">The animal is cropped out and passed to BioCLIP, a model trained on images from across the tree of life. The experiment compares two approaches: asking the model directly with species names (zero-shot), and training a small classifier on its features with ~110 labelled photos per species.</div>
+      <div class="nd">The animal is cropped out and passed to BioCLIP, a model trained on images from across the tree of life. The experiment compares two approaches: asking the model directly with species names (zero-shot), and training a small classifier on its features with ~110 labelled photos per species. <strong>Result:</strong> 0.82 vs 0.91 macro-F1 (see below).</div>
     </div>
     <div class="arrow">↓</div>
     <div class="group-label">Reasoning: sighting → decision</div>
@@ -186,10 +186,49 @@
 
   <hr class="divider"/>
 
+  <h2>First Results: Identifying Species in Camera-Trap Photos</h2>
+  <p>
+    The test photos come from <strong>160 camera locations the models never saw during training</strong>. That matters because photos
+    from one camera share a background, so testing on a familiar camera would flatter the model. All three methods use the same
+    BioCLIP features. The only difference is how the final decision is made.
+  </p>
+  <div class="stats">
+    <div class="stat"><div class="sv">0.82</div><div class="sl">macro-F1, zero-shot: BioCLIP given only the species names, no training</div></div>
+    <div class="stat"><div class="sv">0.91</div><div class="sl">macro-F1, a simple classifier trained on ~110 labelled photos per species</div></div>
+    <div class="stat"><div class="sv">5</div><div class="sl">labelled photos per species were enough to beat zero-shot (0.86 vs 0.82)</div></div>
+    <div class="stat"><div class="sv">98%</div><div class="sl">of animal photos where MegaDetector found the animal</div></div>
+  </div>
+  <img src="few_shot_curve.png" alt="Line chart: macro-F1 against labelled photos per species. The logistic regression and kNN classifiers start near 0.58 with one photo, pass the zero-shot line of 0.82 at about five photos, and reach 0.91 with all ~111 photos." style="width:100%;border-radius:10px;border:1px solid var(--border);margin:1rem 0"/>
+  <p style="font-size:.85rem">95% ranges, from resampling whole camera locations: zero-shot 0.76–0.87, classifier 0.88–0.95. The classifier was better in every resample.</p>
+
+  <div class="finding">
+    <div class="fk">Surprise</div>
+    <div class="ft">The mistakes weren't the look-alikes I expected</div>
+    <div class="fd">I expected tigers and leopards to be confused. They almost never were (≤3%). Instead, zero-shot errors piled into a few
+    “attractor” species: of 60 mistakes, 16 were labelled wild boar, 15 tapir and 12 tiger. Five tapirs were called tigers. The trained
+    classifier learns its boundaries from real photos, which removes most of this pull.</div>
+  </div>
+  <img src="confusion_zero_shot_vs_probe.png" alt="Two confusion matrices side by side. Zero-shot (left) has off-diagonal errors spread into the wild boar, tapir and tiger columns; the trained classifier (right) is mostly diagonal, with recall between 82% and 97% for every species." style="width:100%;border-radius:10px;border:1px solid var(--border);margin:1rem 0"/>
+  <div class="finding">
+    <div class="fk">Trade-off</div>
+    <div class="ft">The trained classifier can't say “I've never seen this”</div>
+    <div class="fd">Shown 17 photos of a Sunda pangolin, a species it was never trained on, the classifier confidently called 8 of them a clouded leopard.
+    Zero-shot, given “pangolin” as one more option, named 9 of 17 correctly. Higher accuracy came at the cost of recognising new species.</div>
+  </div>
+  <div class="finding">
+    <div class="fk">Ablations</div>
+    <div class="ft">Cropping and wording both matter</div>
+    <div class="fd">Classifying the animal crop instead of the whole frame raised scores from 0.78 to 0.82 (zero-shot) and from 0.87 to 0.91 (classifier).
+    Scientific-name prompts beat plain English (“a camera trap photo of a sun bear”): 0.82 vs 0.78.</div>
+  </div>
+  <p style="font-size:.85rem">Full metrics, all four figures and the limitations are in the
+    <a href="https://github.com/datakeep64/wildlife-intelligence-system/tree/main/src/perception/camera_trap" target="_blank">camera-trap write-up on GitHub</a>.</p>
+
+  <hr class="divider"/>
+
   <h2>What the Data Has Already Taught Me</h2>
   <p>
-    The models haven't been evaluated yet, but setting up the data already exposed problems the design has to handle.
-    Each one is recorded and will be part of the write-up.
+    Setting up the data exposed problems that the design has to handle. Each one is recorded and will be part of the write-up.
   </p>
 
   <div class="finding">
@@ -245,7 +284,7 @@
     <div class="progress-item"><span class="check done">✓</span> Ontology schema + 26-taxon seed, queryable with SPARQL (unit-tested)</div>
     <div class="progress-item"><span class="check done">✓</span> Knowledge-based recommender with explanations + trail suggestions (unit-tested)</div>
     <div class="progress-item"><span class="check wip">~</span> NLLB-200 translation: module and test set built, first check run; full evaluation needs reference translations</div>
-    <div class="progress-item"><span class="check todo">○</span> Experiment: zero-shot vs linear probe vs kNN, with confusion matrices and look-alike species</div>
+    <div class="progress-item"><span class="check done">✓</span> Experiment: zero-shot vs linear probe vs kNN on held-out camera locations, with confusion matrices, few-shot curve and ablations</div>
     <div class="progress-item"><span class="check todo">○</span> Rule-based alerts in SPARQL</div>
     <div class="progress-item"><span class="check todo">○</span> Collaborative (ALS), content-based and hybrid recommenders, compared on precision@k / recall@k</div>
     <div class="progress-item"><span class="check todo">○</span> Property graph + embedding KG link prediction (TransE vs another model)</div>
